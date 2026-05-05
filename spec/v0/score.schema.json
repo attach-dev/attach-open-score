@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://attach.dev/schemas/attach-open-score/v0/score.schema.json",
+  "title": "Attach Open Score v0 verdict",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package",
+    "decision",
+    "score",
+    "confidence",
+    "reasons",
+    "source_refs",
+    "evaluated_at",
+    "ttl_seconds",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": { "const": "attach-open-score/v0" },
+    "policy_profile": { "type": "string", "minLength": 1 },
+    "engine_version": { "type": "string", "minLength": 1 },
+    "package": { "$ref": "#/$defs/package" },
+    "decision": { "enum": ["ALLOW", "ASK", "DENY", "UNKNOWN"] },
+    "score": {
+      "description": "0-100 risk score where higher means riskier; null when too little information exists.",
+      "anyOf": [
+        { "type": "integer", "minimum": 0, "maximum": 100 },
+        { "type": "null" }
+      ]
+    },
+    "confidence": { "enum": ["LOW", "MEDIUM", "HIGH"] },
+    "reasons": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/reason" },
+      "minItems": 1
+    },
+    "source_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source_ref" }
+    },
+    "evaluated_at": { "type": "string", "format": "date-time" },
+    "ttl_seconds": { "type": "integer", "minimum": 0 },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "debug": {
+      "type": "object",
+      "description": "Optional local-only debug information. Must not contain secrets, private hosted data, or proprietary vendor outputs."
+    }
+  },
+  "$defs": {
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ecosystem", "name", "purl", "resolved"],
+      "properties": {
+        "ecosystem": { "enum": ["npm", "pypi", "crates", "go", "maven", "rubygems", "other"] },
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "purl": { "type": "string", "minLength": 1 },
+        "requested_spec": { "type": "string", "minLength": 1 },
+        "resolved": { "type": "boolean" },
+        "repository_url": { "type": "string", "format": "uri" }
+      }
+    },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "severity", "decision_effect", "message"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^(X_)?[A-Z][A-Z0-9_]*$" },
+        "severity": { "enum": ["INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "decision_effect": { "enum": ["ALLOW", "ASK", "DENY", "UNKNOWN", "NONE"] },
+        "message": { "type": "string", "minLength": 1 },
+        "source_ref_ids": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "details": {
+          "type": "object",
+          "description": "JSON-serializable structured details; no secrets, private hosted data, or proprietary vendor outputs."
+        }
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "url",
+        "retrieved_at",
+        "ttl_seconds",
+        "license_or_terms_url",
+        "attribution",
+        "attribution_required",
+        "redistribution",
+        "public_display"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "source_id": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "ttl_seconds": { "type": "integer", "minimum": 0 },
+        "license_or_terms_url": { "type": "string", "format": "uri" },
+        "attribution": { "type": "string", "minLength": 1 },
+        "attribution_required": { "type": "boolean" },
+        "redistribution": { "enum": ["allowed", "restricted", "unknown"] },
+        "public_display": { "enum": ["allowed", "restricted", "unknown"] }
+      }
+    }
+  }
+}

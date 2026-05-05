@@ -1,0 +1,79 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "v0-draft",
+  "package": {
+    "ecosystem": "npm",
+    "name": "synthetic-new-native-addon",
+    "version": "0.1.0",
+    "purl": "pkg:npm/synthetic-new-native-addon@0.1.0",
+    "requested_spec": "latest",
+    "resolved": true
+  },
+  "decision": "ASK",
+  "score": 56,
+  "confidence": "MEDIUM",
+  "reasons": [
+    {
+      "code": "VERSION_TOO_NEW",
+      "severity": "MEDIUM",
+      "decision_effect": "ASK",
+      "message": "Synthetic fixture: version publish time is below the default age threshold.",
+      "source_ref_ids": [
+        "synthetic-registry-version"
+      ],
+      "details": {
+        "age_hours": 6,
+        "threshold_hours": 48,
+        "fixture": "synthetic"
+      }
+    },
+    {
+      "code": "INSTALL_SCRIPT_PRESENT",
+      "severity": "MEDIUM",
+      "decision_effect": "ASK",
+      "message": "Synthetic fixture: package declares an install lifecycle script.",
+      "source_ref_ids": [
+        "synthetic-package-metadata"
+      ],
+      "details": {
+        "script": "install",
+        "fixture": "synthetic"
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "synthetic-registry-version",
+      "source": "synthetic-registry",
+      "source_id": "synthetic-new-native-addon@0.1.0",
+      "url": "https://example.invalid/registry/synthetic-new-native-addon/0.1.0",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "ttl_seconds": 3600,
+      "license_or_terms_url": "https://example.invalid/terms",
+      "attribution": "Synthetic registry metadata fixture; not real upstream data.",
+      "attribution_required": false,
+      "redistribution": "allowed",
+      "public_display": "allowed"
+    },
+    {
+      "id": "synthetic-package-metadata",
+      "source": "synthetic-artifact-inspection",
+      "source_id": "sha256:synthetic",
+      "url": "https://example.invalid/artifacts/synthetic-new-native-addon-0.1.0.tgz",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://example.invalid/terms",
+      "attribution": "Synthetic package metadata fixture; no real package contents redistributed.",
+      "attribution_required": false,
+      "redistribution": "allowed",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-05T00:00:00Z",
+  "ttl_seconds": 3600,
+  "limitations": [
+    "Synthetic fixture; not a real package evaluation.",
+    "Install scripts are not automatically malicious; they require policy review."
+  ]
+}

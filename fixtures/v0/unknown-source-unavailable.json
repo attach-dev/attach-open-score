@@ -1,0 +1,43 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "v0-draft",
+  "package": {
+    "ecosystem": "go",
+    "name": "example.invalid/synthetic/module",
+    "purl": "pkg:golang/example.invalid/synthetic/module",
+    "requested_spec": "latest",
+    "resolved": false
+  },
+  "decision": "UNKNOWN",
+  "score": null,
+  "confidence": "LOW",
+  "reasons": [
+    {
+      "code": "UNRESOLVED_PACKAGE",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "Synthetic fixture: requested package could not be resolved to a concrete version.",
+      "details": {
+        "fixture": "synthetic"
+      }
+    },
+    {
+      "code": "SOURCE_UNAVAILABLE",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "Synthetic fixture: required source was unavailable.",
+      "details": {
+        "source": "synthetic-go-proxy",
+        "fixture": "synthetic"
+      }
+    }
+  ],
+  "source_refs": [],
+  "evaluated_at": "2026-05-05T00:00:00Z",
+  "ttl_seconds": 300,
+  "limitations": [
+    "Synthetic fixture; not a real package evaluation.",
+    "Provider unavailability is uncertainty, not evidence of safety or danger."
+  ]
+}
