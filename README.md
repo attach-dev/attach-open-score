@@ -7,6 +7,7 @@ Attach Open Score is the public, Apache-2.0 scoring method and deterministic eng
 Start here:
 
 - `docs/SOURCES.md` — allowed source families, banned sources, attribution posture, and legal review gates.
+- `docs/IMPLEMENTATION_LAYOUT.md` — Go-first implementation language/package layout and attach-guard integration posture.
 - `docs/SCORE_SCHEMA.md` — v0 score/verdict shape, package identity, reasons, source refs, and TTL semantics.
 - `docs/DECISION_SEMANTICS.md` — ALLOW / ASK / DENY / UNKNOWN behavior and policy profiles.
 - `docs/REASON_CODES.md` — v0 deterministic reason-code taxonomy.
