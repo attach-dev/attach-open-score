@@ -13,6 +13,13 @@ Start here:
 - `docs/REASON_CODES.md` — v0 deterministic reason-code taxonomy.
 - `docs/LIMITATIONS.md` — what v0 can and cannot guarantee.
 - `spec/v0/score.schema.json` — machine-readable JSON Schema draft.
+
+Initial tooling:
+
+```bash
+go test ./...
+go run ./cmd/attach-open-score --root .
+```
 - `fixtures/v0/` — synthetic public-safe example verdicts.
 
 Status: draft public spec. Source policy, schema, and fixtures come before networked adapters.
