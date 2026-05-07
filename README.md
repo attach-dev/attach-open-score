@@ -13,6 +13,7 @@ Start here:
 - `docs/REASON_CODES.md` — v0 deterministic reason-code taxonomy.
 - `docs/LIMITATIONS.md` — what v0 can and cannot guarantee.
 - `spec/v0/score.schema.json` — machine-readable JSON Schema draft.
+- `docs/plans/local-dogfood-score-walkthrough.md` — offline local dogfood walkthrough for inspecting synthetic ALLOW / ASK / DENY / UNKNOWN fixture verdicts.
 
 Initial tooling:
 
