@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ const (
 	DefaultEngineVersion = "attach-open-score-go/dev"
 	DefaultTTLSeconds    = 86400
 )
+
+var reasonCodePattern = regexp.MustCompile(`^(X_)?[A-Z][A-Z0-9_]*$`)
 
 type Request struct {
 	Package  schema.PackageIdentity
@@ -38,7 +41,7 @@ type Options struct {
 	Now           func() time.Time
 	PolicyProfile string
 	EngineVersion string
-	TTLSeconds    int
+	TTLSeconds    *int
 }
 
 type Engine struct {
@@ -64,9 +67,9 @@ func NewEngine(options Options) Engine {
 		engineVersion = DefaultEngineVersion
 	}
 
-	ttl := options.TTLSeconds
-	if ttl <= 0 {
-		ttl = DefaultTTLSeconds
+	ttl := DefaultTTLSeconds
+	if options.TTLSeconds != nil && *options.TTLSeconds >= 0 {
+		ttl = *options.TTLSeconds
 	}
 
 	return Engine{
@@ -186,6 +189,9 @@ func validateReason(reason schema.Reason) error {
 	if reason.Code == "" {
 		return fmt.Errorf("evidence reason code is required")
 	}
+	if !reasonCodePattern.MatchString(reason.Code) {
+		return fmt.Errorf("reason code %q does not match the v0 schema pattern", reason.Code)
+	}
 	if !reasons.IsKnown(reason.Code) && !strings.HasPrefix(reason.Code, "X_") {
 		return fmt.Errorf("reason code %q is not in the v0 taxonomy", reason.Code)
 	}
@@ -203,10 +209,88 @@ func validateReason(reason schema.Reason) error {
 			return fmt.Errorf("reason %q details must be JSON-serializable: %w", reason.Code, err)
 		}
 	}
-	if reason.DecisionEffect == schema.DecisionEffectDeny && !isAllowed(reason.Code, reasons.KnownMaliciousPackage, reasons.KnownVulnerabilityCritical, reasons.ArtifactDigestMismatch) {
-		return fmt.Errorf("reason %q cannot use DENY effect in v0 scorer core", reason.Code)
+	if requiresSourceRef(reason.Code) && len(reason.SourceRefIDs) == 0 {
+		return fmt.Errorf("reason %q requires at least one source_ref_id", reason.Code)
+	}
+	if err := validateKnownReasonEffect(reason); err != nil {
+		return err
 	}
 	return nil
+}
+
+func validateKnownReasonEffect(reason schema.Reason) error {
+	expected, ok := defaultDecisionEffect(reason.Code)
+	if !ok {
+		return nil
+	}
+	if reason.DecisionEffect != expected {
+		return fmt.Errorf("reason %q must use %s effect in v0 scorer core", reason.Code, expected)
+	}
+	return nil
+}
+
+func defaultDecisionEffect(code string) (schema.DecisionEffect, bool) {
+	switch code {
+	case reasons.KnownMaliciousPackage,
+		reasons.KnownVulnerabilityCritical,
+		reasons.ArtifactDigestMismatch:
+		return schema.DecisionEffectDeny, true
+	case reasons.KnownVulnerabilityHigh,
+		reasons.KnownVulnerabilityModerate,
+		reasons.PackageTooNew,
+		reasons.VersionTooNew,
+		reasons.PackageUnpublishedOrYanked,
+		reasons.DeprecatedPackage,
+		reasons.InstallScriptPresent,
+		reasons.SuspiciousInstallScript,
+		reasons.SuspiciousBinaryArtifact,
+		reasons.PossibleTyposquat,
+		reasons.DependencyConfusionRisk,
+		reasons.LowRepositoryHealth,
+		reasons.SourceStale,
+		reasons.ConflictingSourceData:
+		return schema.DecisionEffectAsk, true
+	case reasons.UnresolvedPackage,
+		reasons.UnsupportedEcosystem,
+		reasons.SourceUnavailable,
+		reasons.SourceTermsBlocked,
+		reasons.InsufficientData:
+		return schema.DecisionEffectUnknown, true
+	case reasons.NoKnownVulnerabilities,
+		reasons.RepositoryMappingUncertain,
+		reasons.MaintainerActivityLow:
+		return schema.DecisionEffectNone, true
+	default:
+		return "", false
+	}
+}
+
+func requiresSourceRef(code string) bool {
+	switch code {
+	case reasons.KnownMaliciousPackage,
+		reasons.KnownVulnerabilityCritical,
+		reasons.KnownVulnerabilityHigh,
+		reasons.KnownVulnerabilityModerate,
+		reasons.NoKnownVulnerabilities,
+		reasons.PackageTooNew,
+		reasons.VersionTooNew,
+		reasons.PackageUnpublishedOrYanked,
+		reasons.DeprecatedPackage,
+		reasons.InstallScriptPresent,
+		reasons.SuspiciousInstallScript,
+		reasons.SuspiciousBinaryArtifact,
+		reasons.ArtifactDigestMismatch,
+		reasons.PossibleTyposquat,
+		reasons.DependencyConfusionRisk,
+		reasons.LowRepositoryHealth,
+		reasons.RepositoryMappingUncertain,
+		reasons.MaintainerActivityLow,
+		reasons.SourceStale,
+		reasons.ConflictingSourceData:
+		return true
+	default:
+		return false
+	}
 }
 
 func validateSourceRef(sourceRef schema.SourceRef) error {
@@ -222,8 +306,8 @@ func validateSourceRef(sourceRef schema.SourceRef) error {
 	if _, err := time.Parse(time.RFC3339, sourceRef.RetrievedAt); err != nil {
 		return fmt.Errorf("source_ref %q retrieved_at must be RFC3339: %w", sourceRef.ID, err)
 	}
-	if sourceRef.TTLSeconds <= 0 {
-		return fmt.Errorf("source_ref %q ttl_seconds must be positive", sourceRef.ID)
+	if sourceRef.TTLSeconds < 0 {
+		return fmt.Errorf("source_ref %q ttl_seconds must be non-negative", sourceRef.ID)
 	}
 	if err := validateURI("source_ref license_or_terms_url", sourceRef.LicenseOrTermsURL); err != nil {
 		return err
@@ -242,8 +326,8 @@ func validateSourceRef(sourceRef schema.SourceRef) error {
 
 func validateURI(label, value string) error {
 	parsed, err := url.ParseRequestURI(value)
-	if err != nil || parsed.Scheme == "" {
-		return fmt.Errorf("%s must be a URI", label)
+	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+		return fmt.Errorf("%s must be a URI with host", label)
 	}
 	return nil
 }
@@ -275,28 +359,30 @@ func decide(policyProfile string, reasonList []schema.Reason) (schema.Decision, 
 	}
 
 	if hasDeny {
-		return schema.DecisionDeny, intPtr(maxScore), confidence
+		if policyProfile == ProfileAuditOnly {
+			return schema.DecisionAllow, intPtr(maxScore), schema.ConfidenceHigh
+		}
+		return schema.DecisionDeny, intPtr(maxScore), schema.ConfidenceHigh
 	}
 	if hasAsk {
+		if policyProfile == ProfileAuditOnly {
+			return schema.DecisionAllow, intPtr(max(maxScore, 25)), maxConfidence(confidence, schema.ConfidenceMedium)
+		}
+		if policyProfile == ProfileCIStrict {
+			return schema.DecisionDeny, intPtr(max(maxScore, 25)), maxConfidence(confidence, schema.ConfidenceMedium)
+		}
 		return schema.DecisionAsk, intPtr(max(maxScore, 25)), maxConfidence(confidence, schema.ConfidenceMedium)
 	}
 	if hasUnknown {
-		if policyProfile == ProfileLocalDevDefault && hasProviderUncertainty(reasonList) {
-			return schema.DecisionAsk, intPtr(45), schema.ConfidenceLow
+		if policyProfile == ProfileAuditOnly {
+			return schema.DecisionAllow, nil, schema.ConfidenceLow
 		}
-		return schema.DecisionUnknown, nil, schema.ConfidenceLow
+		if policyProfile == ProfileCIStrict {
+			return schema.DecisionDeny, nil, schema.ConfidenceLow
+		}
+		return schema.DecisionAsk, intPtr(45), schema.ConfidenceLow
 	}
 	return schema.DecisionAllow, intPtr(min(maxScore, 24)), confidence
-}
-
-func hasProviderUncertainty(reasonList []schema.Reason) bool {
-	for _, reason := range reasonList {
-		switch reason.Code {
-		case reasons.SourceUnavailable, reasons.SourceTermsBlocked, reasons.SourceStale, reasons.ConflictingSourceData:
-			return true
-		}
-	}
-	return false
 }
 
 func scoreForSeverity(severity string) int {

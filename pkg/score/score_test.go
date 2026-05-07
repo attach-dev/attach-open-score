@@ -114,7 +114,7 @@ func TestEvaluateAllowsInformationalReasonsOnly(t *testing.T) {
 	assertSchemaValid(t, verdict)
 }
 
-func TestEvaluateUnknownWhenEvidenceIsInsufficient(t *testing.T) {
+func TestEvaluateAsksWhenEvidenceIsInsufficient(t *testing.T) {
 	engine := NewEngine(Options{Now: func() time.Time { return fixedNow }})
 
 	verdict, err := engine.Evaluate(Request{Package: testPackage()})
@@ -122,11 +122,11 @@ func TestEvaluateUnknownWhenEvidenceIsInsufficient(t *testing.T) {
 		t.Fatalf("Evaluate returned error: %v", err)
 	}
 
-	if verdict.Decision != schema.DecisionUnknown {
-		t.Fatalf("decision = %s, want UNKNOWN", verdict.Decision)
+	if verdict.Decision != schema.DecisionAsk {
+		t.Fatalf("decision = %s, want ASK for local insufficient evidence", verdict.Decision)
 	}
-	if verdict.Score != nil {
-		t.Fatalf("score = %v, want nil when evidence is insufficient", *verdict.Score)
+	if verdict.Score == nil || *verdict.Score != 45 {
+		t.Fatalf("score = %v, want moderate uncertainty score 45", verdict.Score)
 	}
 	if verdict.Confidence != schema.ConfidenceLow {
 		t.Fatalf("confidence = %s, want LOW", verdict.Confidence)
@@ -173,7 +173,88 @@ func TestEvaluateAskOverridesUnknownInAnyOrder(t *testing.T) {
 	}
 }
 
-func TestEvaluateMapsSourceUnavailableByPolicyProfile(t *testing.T) {
+func TestEvaluateDeniesRemainHighConfidenceRegardlessOfEvidenceOrder(t *testing.T) {
+	cases := []struct {
+		name     string
+		evidence []Evidence
+	}{
+		{
+			name: "deny then unknown",
+			evidence: []Evidence{
+				testEvidence(reasons.KnownVulnerabilityCritical, "CRITICAL", schema.DecisionEffectDeny, "Synthetic critical advisory.", "synthetic-osv"),
+				testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source"),
+			},
+		},
+		{
+			name: "unknown then deny",
+			evidence: []Evidence{
+				testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source"),
+				testEvidence(reasons.KnownVulnerabilityCritical, "CRITICAL", schema.DecisionEffectDeny, "Synthetic critical advisory.", "synthetic-osv"),
+			},
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: tt.evidence})
+			if err != nil {
+				t.Fatalf("Evaluate returned error: %v", err)
+			}
+			if verdict.Decision != schema.DecisionDeny {
+				t.Fatalf("decision = %s, want DENY", verdict.Decision)
+			}
+			if verdict.Confidence != schema.ConfidenceHigh {
+				t.Fatalf("confidence = %s, want HIGH", verdict.Confidence)
+			}
+			assertSchemaValid(t, verdict)
+		})
+	}
+}
+
+func TestEvaluateAuditOnlyDoesNotEmitBlockingDecision(t *testing.T) {
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileAuditOnly}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{testEvidence(reasons.KnownVulnerabilityCritical, "CRITICAL", schema.DecisionEffectDeny, "Synthetic critical advisory.", "synthetic-osv")},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if verdict.PolicyProfile != ProfileAuditOnly {
+		t.Fatalf("policy_profile = %q, want %q", verdict.PolicyProfile, ProfileAuditOnly)
+	}
+	if verdict.Decision != schema.DecisionAllow {
+		t.Fatalf("audit-only decision = %s, want ALLOW", verdict.Decision)
+	}
+	if verdict.Score == nil || *verdict.Score < 85 {
+		t.Fatalf("audit-only score = %v, want original high risk score retained", verdict.Score)
+	}
+	if len(verdict.Reasons) != 1 || verdict.Reasons[0].DecisionEffect != schema.DecisionEffectDeny {
+		t.Fatalf("audit-only reasons = %#v, want original DENY reason retained", verdict.Reasons)
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluateAuditOnlyMapsUnknownToNonBlockingDecision(t *testing.T) {
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileAuditOnly}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source")},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if verdict.Decision != schema.DecisionAllow {
+		t.Fatalf("audit-only decision = %s, want ALLOW", verdict.Decision)
+	}
+	if verdict.Score != nil {
+		t.Fatalf("audit-only score = %v, want nil for underlying unknown evidence", *verdict.Score)
+	}
+	if len(verdict.Reasons) != 1 || verdict.Reasons[0].DecisionEffect != schema.DecisionEffectUnknown {
+		t.Fatalf("audit-only reasons = %#v, want original UNKNOWN reason retained", verdict.Reasons)
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluatePreservesUnknownForSourceUnavailable(t *testing.T) {
 	evidence := []Evidence{testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source")}
 
 	localVerdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: evidence})
@@ -181,7 +262,10 @@ func TestEvaluateMapsSourceUnavailableByPolicyProfile(t *testing.T) {
 		t.Fatalf("local Evaluate returned error: %v", err)
 	}
 	if localVerdict.Decision != schema.DecisionAsk {
-		t.Fatalf("local decision = %s, want ASK for provider/source uncertainty", localVerdict.Decision)
+		t.Fatalf("local decision = %s, want ASK for source unavailability", localVerdict.Decision)
+	}
+	if localVerdict.Score == nil || *localVerdict.Score != 45 {
+		t.Fatalf("local score = %v, want moderate uncertainty score 45", localVerdict.Score)
 	}
 	assertSchemaValid(t, localVerdict)
 
@@ -195,10 +279,51 @@ func TestEvaluateMapsSourceUnavailableByPolicyProfile(t *testing.T) {
 	if ciVerdict.EngineVersion != "test-engine" {
 		t.Fatalf("engine_version = %q, want test-engine", ciVerdict.EngineVersion)
 	}
-	if ciVerdict.Decision != schema.DecisionUnknown {
-		t.Fatalf("ci decision = %s, want UNKNOWN", ciVerdict.Decision)
+	if ciVerdict.Decision != schema.DecisionDeny {
+		t.Fatalf("ci decision = %s, want DENY", ciVerdict.Decision)
 	}
 	assertSchemaValid(t, ciVerdict)
+}
+
+func TestEvaluatePreservesExplicitZeroTopLevelTTL(t *testing.T) {
+	zero := 0
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, TTLSeconds: &zero}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if verdict.TTLSeconds != 0 {
+		t.Fatalf("ttl_seconds = %d, want explicit zero", verdict.TTLSeconds)
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluateDefaultsNegativeTopLevelTTL(t *testing.T) {
+	negative := -1
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, TTLSeconds: &negative}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if verdict.TTLSeconds != DefaultTTLSeconds {
+		t.Fatalf("ttl_seconds = %d, want default %d", verdict.TTLSeconds, DefaultTTLSeconds)
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluateAcceptsZeroSourceTTL(t *testing.T) {
+	evidence := testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")
+	evidence.SourceRef.TTLSeconds = 0
+
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: []Evidence{evidence}})
+	if err != nil {
+		t.Fatalf("Evaluate returned error for zero source_ref ttl_seconds: %v", err)
+	}
+	assertSchemaValid(t, verdict)
 }
 
 func TestEvaluateRejectsSchemaInvalidEvidence(t *testing.T) {
@@ -215,6 +340,58 @@ func TestEvaluateRejectsSchemaInvalidEvidence(t *testing.T) {
 			request: Request{Package: testPackage(), Evidence: []Evidence{testEvidence("NOT_A_CODE", "INFO", schema.DecisionEffectNone, "Unknown code.", "synthetic-source")}},
 		},
 		{
+			name:    "malformed experimental reason code",
+			request: Request{Package: testPackage(), Evidence: []Evidence{testEvidence("X_bad-code", "INFO", schema.DecisionEffectNone, "Malformed experimental code.", "synthetic-source")}},
+		},
+		{
+			name:    "deny reason with non deny effect",
+			request: Request{Package: testPackage(), Evidence: []Evidence{testEvidence(reasons.KnownVulnerabilityCritical, "CRITICAL", schema.DecisionEffectNone, "Critical advisory effect typo.", "synthetic-osv")}},
+		},
+		{
+			name:    "known ask reason with deny effect",
+			request: Request{Package: testPackage(), Evidence: []Evidence{testEvidence(reasons.VersionTooNew, "MEDIUM", schema.DecisionEffectDeny, "Version too new effect typo.", "synthetic-registry")}},
+		},
+		{
+			name:    "known none reason with ask effect",
+			request: Request{Package: testPackage(), Evidence: []Evidence{testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectAsk, "No known vulnerabilities effect typo.", "synthetic-source")}},
+		},
+		{
+			name: "registry reason without source refs",
+			request: Request{Package: testPackage(), Evidence: []Evidence{{Reason: schema.Reason{
+				Code:           reasons.InstallScriptPresent,
+				Severity:       "MEDIUM",
+				DecisionEffect: schema.DecisionEffectAsk,
+				Message:        "Install script finding lacks registry/package metadata provenance.",
+			}}}},
+		},
+		{
+			name: "project health reason without source refs",
+			request: Request{Package: testPackage(), Evidence: []Evidence{{Reason: schema.Reason{
+				Code:           reasons.LowRepositoryHealth,
+				Severity:       "MEDIUM",
+				DecisionEffect: schema.DecisionEffectAsk,
+				Message:        "Repository health finding lacks project-health provenance.",
+			}}}},
+		},
+		{
+			name: "identity risk reason without source refs",
+			request: Request{Package: testPackage(), Evidence: []Evidence{{Reason: schema.Reason{
+				Code:           reasons.PossibleTyposquat,
+				Severity:       "HIGH",
+				DecisionEffect: schema.DecisionEffectAsk,
+				Message:        "Typosquat finding lacks popularity/namespace provenance.",
+			}}}},
+		},
+		{
+			name: "advisory reason without source refs",
+			request: Request{Package: testPackage(), Evidence: []Evidence{{Reason: schema.Reason{
+				Code:           reasons.KnownVulnerabilityCritical,
+				Severity:       "CRITICAL",
+				DecisionEffect: schema.DecisionEffectDeny,
+				Message:        "Synthetic critical advisory without provenance.",
+			}}}},
+		},
+		{
 			name:    "missing reason message",
 			request: Request{Package: testPackage(), Evidence: []Evidence{testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "", "synthetic-source")}},
 		},
@@ -223,6 +400,14 @@ func TestEvaluateRejectsSchemaInvalidEvidence(t *testing.T) {
 			request: Request{Package: testPackage(), Evidence: []Evidence{func() Evidence {
 				e := testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")
 				e.SourceRef.URL = "not a url"
+				return e
+			}()}},
+		},
+		{
+			name: "hostless source ref url",
+			request: Request{Package: testPackage(), Evidence: []Evidence{func() Evidence {
+				e := testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")
+				e.SourceRef.URL = "https://"
 				return e
 			}()}},
 		},
