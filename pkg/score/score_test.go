@@ -2,6 +2,7 @@ package score
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -283,6 +284,67 @@ func TestEvaluatePreservesUnknownForSourceUnavailable(t *testing.T) {
 		t.Fatalf("ci decision = %s, want DENY", ciVerdict.Decision)
 	}
 	assertSchemaValid(t, ciVerdict)
+}
+
+func TestEvaluateCapsAskScoreBandEvenWithCallerSuppliedCriticalSeverity(t *testing.T) {
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{testEvidence(reasons.KnownVulnerabilityHigh, "CRITICAL", schema.DecisionEffectAsk, "Synthetic high advisory supplied with inconsistent critical severity.", "synthetic-osv")},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if verdict.Decision != schema.DecisionAsk {
+		t.Fatalf("decision = %s, want ASK", verdict.Decision)
+	}
+	if verdict.Score == nil || *verdict.Score != askScoreCeiling {
+		t.Fatalf("score = %v, want ASK ceiling %d", verdict.Score, askScoreCeiling)
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluateCIStrictPreservesRiskScoreWhenUpgradingAskToDeny(t *testing.T) {
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{testEvidence(reasons.KnownVulnerabilityHigh, "CRITICAL", schema.DecisionEffectAsk, "Synthetic high advisory supplied with inconsistent critical severity.", "synthetic-osv")},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if verdict.Decision != schema.DecisionDeny {
+		t.Fatalf("decision = %s, want DENY", verdict.Decision)
+	}
+	if verdict.Score == nil || *verdict.Score != severityCriticalScore {
+		t.Fatalf("score = %v, want preserved critical risk score %d", verdict.Score, severityCriticalScore)
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluateRejectsUnknownPolicyProfile(t *testing.T) {
+	_, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: "local_dev_default"}).Evaluate(Request{Package: testPackage()})
+	if err == nil {
+		t.Fatalf("Evaluate returned nil error for unknown policy profile")
+	}
+}
+
+func TestEvaluateCIStrictReportsPolicyHookLimitation(t *testing.T) {
+	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source")},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if len(verdict.Limitations) != 2 {
+		t.Fatalf("limitations = %#v, want base limitation plus ci-strict hook limitation", verdict.Limitations)
+	}
+	ciLimitation := verdict.Limitations[1]
+	for _, want := range []string{"allowlists", "protected ecosystem", "production dependency group"} {
+		if !strings.Contains(ciLimitation, want) {
+			t.Fatalf("ci-strict limitation = %q, want mention of %q", ciLimitation, want)
+		}
+	}
+	assertSchemaValid(t, verdict)
 }
 
 func TestEvaluatePreservesExplicitZeroTopLevelTTL(t *testing.T) {

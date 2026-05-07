@@ -20,6 +20,17 @@ const (
 
 	DefaultEngineVersion = "attach-open-score-go/dev"
 	DefaultTTLSeconds    = 86400
+
+	allowScoreCeiling          = 24
+	askScoreFloor              = 25
+	askScoreCeiling            = 59
+	unknownLocalScore          = 45
+	denyScoreFloor             = 85
+	severityCriticalScore      = 95
+	severityHighScore          = 70
+	severityMediumScore        = 45
+	severityLowScore           = 20
+	severityInformationalScore = 5
 )
 
 var reasonCodePattern = regexp.MustCompile(`^(X_)?[A-Z][A-Z0-9_]*$`)
@@ -49,6 +60,7 @@ type Engine struct {
 	policyProfile string
 	engineVersion string
 	ttlSeconds    int
+	configError   error
 }
 
 func NewEngine(options Options) Engine {
@@ -58,8 +70,11 @@ func NewEngine(options Options) Engine {
 	}
 
 	profile := options.PolicyProfile
+	var configError error
 	if profile == "" {
 		profile = ProfileLocalDevDefault
+	} else if !isKnownPolicyProfile(profile) {
+		configError = fmt.Errorf("unknown policy profile %q", profile)
 	}
 
 	engineVersion := options.EngineVersion
@@ -77,10 +92,14 @@ func NewEngine(options Options) Engine {
 		policyProfile: profile,
 		engineVersion: engineVersion,
 		ttlSeconds:    ttl,
+		configError:   configError,
 	}
 }
 
 func (e Engine) Evaluate(request Request) (schema.Verdict, error) {
+	if e.configError != nil {
+		return schema.Verdict{}, e.configError
+	}
 	if err := validatePackage(request.Package); err != nil {
 		return schema.Verdict{}, err
 	}
@@ -153,9 +172,7 @@ func (e Engine) Evaluate(request Request) (schema.Verdict, error) {
 		SourceRefs:    sourceRefs,
 		EvaluatedAt:   e.now().UTC().Format(time.RFC3339),
 		TTLSeconds:    e.ttlSeconds,
-		Limitations: []string{
-			"Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
-		},
+		Limitations:   limitationsForProfile(e.policyProfile),
 	}
 
 	return verdict, nil
@@ -336,7 +353,7 @@ func decide(policyProfile string, reasonList []schema.Reason) (schema.Decision, 
 	hasDeny := false
 	hasAsk := false
 	hasUnknown := false
-	maxScore := 5
+	maxScore := severityInformationalScore
 	confidence := schema.ConfidenceMedium
 
 	for _, reason := range reasonList {
@@ -344,7 +361,7 @@ func decide(policyProfile string, reasonList []schema.Reason) (schema.Decision, 
 		switch reason.DecisionEffect {
 		case schema.DecisionEffectDeny:
 			hasDeny = true
-			maxScore = max(maxScore, max(score, 85))
+			maxScore = max(maxScore, max(score, denyScoreFloor))
 			confidence = schema.ConfidenceHigh
 		case schema.DecisionEffectAsk:
 			hasAsk = true
@@ -365,13 +382,15 @@ func decide(policyProfile string, reasonList []schema.Reason) (schema.Decision, 
 		return schema.DecisionDeny, intPtr(maxScore), schema.ConfidenceHigh
 	}
 	if hasAsk {
+		askScore := clamp(max(maxScore, askScoreFloor), askScoreFloor, askScoreCeiling)
+		riskScore := max(maxScore, askScoreFloor)
 		if policyProfile == ProfileAuditOnly {
-			return schema.DecisionAllow, intPtr(max(maxScore, 25)), maxConfidence(confidence, schema.ConfidenceMedium)
+			return schema.DecisionAllow, intPtr(riskScore), maxConfidence(confidence, schema.ConfidenceMedium)
 		}
 		if policyProfile == ProfileCIStrict {
-			return schema.DecisionDeny, intPtr(max(maxScore, 25)), maxConfidence(confidence, schema.ConfidenceMedium)
+			return schema.DecisionDeny, intPtr(riskScore), maxConfidence(confidence, schema.ConfidenceMedium)
 		}
-		return schema.DecisionAsk, intPtr(max(maxScore, 25)), maxConfidence(confidence, schema.ConfidenceMedium)
+		return schema.DecisionAsk, intPtr(askScore), maxConfidence(confidence, schema.ConfidenceMedium)
 	}
 	if hasUnknown {
 		if policyProfile == ProfileAuditOnly {
@@ -380,23 +399,23 @@ func decide(policyProfile string, reasonList []schema.Reason) (schema.Decision, 
 		if policyProfile == ProfileCIStrict {
 			return schema.DecisionDeny, nil, schema.ConfidenceLow
 		}
-		return schema.DecisionAsk, intPtr(45), schema.ConfidenceLow
+		return schema.DecisionAsk, intPtr(unknownLocalScore), schema.ConfidenceLow
 	}
-	return schema.DecisionAllow, intPtr(min(maxScore, 24)), confidence
+	return schema.DecisionAllow, intPtr(min(maxScore, allowScoreCeiling)), confidence
 }
 
 func scoreForSeverity(severity string) int {
 	switch severity {
 	case "CRITICAL":
-		return 95
+		return severityCriticalScore
 	case "HIGH":
-		return 70
+		return severityHighScore
 	case "MEDIUM":
-		return 45
+		return severityMediumScore
 	case "LOW":
-		return 20
+		return severityLowScore
 	default:
-		return 5
+		return severityInformationalScore
 	}
 }
 
@@ -436,6 +455,24 @@ func min(left, right int) int {
 		return right
 	}
 	return left
+}
+
+func clamp(value, lower, upper int) int {
+	return min(max(value, lower), upper)
+}
+
+func isKnownPolicyProfile(profile string) bool {
+	return isAllowed(profile, ProfileLocalDevDefault, ProfileCIStrict, ProfileAuditOnly)
+}
+
+func limitationsForProfile(profile string) []string {
+	limitations := []string{
+		"Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
+	}
+	if profile == ProfileCIStrict {
+		limitations = append(limitations, "ci-strict currently treats ASK and UNKNOWN as blocking; policy allowlists, protected ecosystem hooks, and production dependency group hooks are not implemented in the v0 offline scorer.")
+	}
+	return limitations
 }
 
 func isAllowed(value string, allowed ...string) bool {
