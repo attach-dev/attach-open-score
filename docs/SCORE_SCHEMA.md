@@ -73,6 +73,8 @@ Score range:
 
 These bands are defaults, not a license to ignore reason codes. A single high-severity reason may force `DENY` regardless of aggregate score.
 
+Implementation note: the v0 offline deterministic scorer currently caps actual `ASK` decisions into the `25-59` moderate/uncertain band until canonical per-reason severity mappings and policy calibration are finalized. High-risk `ASK` signals should still be treated as human/team-policy review items based on their reason codes; policy profiles that upgrade those signals to `DENY` may preserve higher risk-facing scores.
+
 ## Confidence
 
 Confidence is about evidence quality, not package safety.
