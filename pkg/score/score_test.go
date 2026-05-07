@@ -14,7 +14,7 @@ import (
 var fixedNow = time.Date(2026, 5, 6, 11, 50, 0, 0, time.UTC)
 
 func TestEvaluateDeniesCriticalReasonAndEmitsSchemaValidVerdict(t *testing.T) {
-	engine := NewEngine(Options{Now: func() time.Time { return fixedNow }})
+	engine := mustEngine(t, Options{Now: func() time.Time { return fixedNow }})
 
 	verdict, err := engine.Evaluate(Request{
 		Package: testPackage(),
@@ -46,7 +46,7 @@ func TestEvaluateDeniesCriticalReasonAndEmitsSchemaValidVerdict(t *testing.T) {
 }
 
 func TestEvaluateAskReasonTakesPrecedenceOverInformationalReasons(t *testing.T) {
-	engine := NewEngine(Options{Now: func() time.Time { return fixedNow }})
+	engine := mustEngine(t, Options{Now: func() time.Time { return fixedNow }})
 
 	verdict, err := engine.Evaluate(Request{
 		Package: testPackage(),
@@ -87,7 +87,7 @@ func TestEvaluateAskReasonTakesPrecedenceOverInformationalReasons(t *testing.T) 
 }
 
 func TestEvaluateAllowsInformationalReasonsOnly(t *testing.T) {
-	engine := NewEngine(Options{Now: func() time.Time { return fixedNow }})
+	engine := mustEngine(t, Options{Now: func() time.Time { return fixedNow }})
 
 	verdict, err := engine.Evaluate(Request{
 		Package: testPackage(),
@@ -116,7 +116,7 @@ func TestEvaluateAllowsInformationalReasonsOnly(t *testing.T) {
 }
 
 func TestEvaluateAsksWhenEvidenceIsInsufficient(t *testing.T) {
-	engine := NewEngine(Options{Now: func() time.Time { return fixedNow }})
+	engine := mustEngine(t, Options{Now: func() time.Time { return fixedNow }})
 
 	verdict, err := engine.Evaluate(Request{Package: testPackage()})
 	if err != nil {
@@ -161,7 +161,7 @@ func TestEvaluateAskOverridesUnknownInAnyOrder(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			engine := NewEngine(Options{Now: func() time.Time { return fixedNow }})
+			engine := mustEngine(t, Options{Now: func() time.Time { return fixedNow }})
 			verdict, err := engine.Evaluate(Request{Package: testPackage(), Evidence: tt.evidence})
 			if err != nil {
 				t.Fatalf("Evaluate returned error: %v", err)
@@ -197,7 +197,7 @@ func TestEvaluateDeniesRemainHighConfidenceRegardlessOfEvidenceOrder(t *testing.
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: tt.evidence})
+			verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: tt.evidence})
 			if err != nil {
 				t.Fatalf("Evaluate returned error: %v", err)
 			}
@@ -213,7 +213,7 @@ func TestEvaluateDeniesRemainHighConfidenceRegardlessOfEvidenceOrder(t *testing.
 }
 
 func TestEvaluateAuditOnlyDoesNotEmitBlockingDecision(t *testing.T) {
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileAuditOnly}).Evaluate(Request{
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileAuditOnly}).Evaluate(Request{
 		Package:  testPackage(),
 		Evidence: []Evidence{testEvidence(reasons.KnownVulnerabilityCritical, "CRITICAL", schema.DecisionEffectDeny, "Synthetic critical advisory.", "synthetic-osv")},
 	})
@@ -236,7 +236,7 @@ func TestEvaluateAuditOnlyDoesNotEmitBlockingDecision(t *testing.T) {
 }
 
 func TestEvaluateAuditOnlyMapsUnknownToNonBlockingDecision(t *testing.T) {
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileAuditOnly}).Evaluate(Request{
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileAuditOnly}).Evaluate(Request{
 		Package:  testPackage(),
 		Evidence: []Evidence{testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source")},
 	})
@@ -258,7 +258,7 @@ func TestEvaluateAuditOnlyMapsUnknownToNonBlockingDecision(t *testing.T) {
 func TestEvaluatePreservesUnknownForSourceUnavailable(t *testing.T) {
 	evidence := []Evidence{testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source")}
 
-	localVerdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: evidence})
+	localVerdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: evidence})
 	if err != nil {
 		t.Fatalf("local Evaluate returned error: %v", err)
 	}
@@ -270,7 +270,7 @@ func TestEvaluatePreservesUnknownForSourceUnavailable(t *testing.T) {
 	}
 	assertSchemaValid(t, localVerdict)
 
-	ciVerdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict, EngineVersion: "test-engine"}).Evaluate(Request{Package: testPackage(), Evidence: evidence})
+	ciVerdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict, EngineVersion: "test-engine"}).Evaluate(Request{Package: testPackage(), Evidence: evidence})
 	if err != nil {
 		t.Fatalf("ci Evaluate returned error: %v", err)
 	}
@@ -287,7 +287,7 @@ func TestEvaluatePreservesUnknownForSourceUnavailable(t *testing.T) {
 }
 
 func TestEvaluateCapsAskScoreBandEvenWithCallerSuppliedCriticalSeverity(t *testing.T) {
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{
 		Package:  testPackage(),
 		Evidence: []Evidence{testEvidence(reasons.KnownVulnerabilityHigh, "CRITICAL", schema.DecisionEffectAsk, "Synthetic high advisory supplied with inconsistent critical severity.", "synthetic-osv")},
 	})
@@ -304,7 +304,7 @@ func TestEvaluateCapsAskScoreBandEvenWithCallerSuppliedCriticalSeverity(t *testi
 }
 
 func TestEvaluateCIStrictPreservesRiskScoreWhenUpgradingAskToDeny(t *testing.T) {
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(Request{
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(Request{
 		Package:  testPackage(),
 		Evidence: []Evidence{testEvidence(reasons.KnownVulnerabilityHigh, "CRITICAL", schema.DecisionEffectAsk, "Synthetic high advisory supplied with inconsistent critical severity.", "synthetic-osv")},
 	})
@@ -320,15 +320,15 @@ func TestEvaluateCIStrictPreservesRiskScoreWhenUpgradingAskToDeny(t *testing.T) 
 	assertSchemaValid(t, verdict)
 }
 
-func TestEvaluateRejectsUnknownPolicyProfile(t *testing.T) {
-	_, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: "local_dev_default"}).Evaluate(Request{Package: testPackage()})
+func TestNewEngineRejectsUnknownPolicyProfile(t *testing.T) {
+	_, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: "local_dev_default"})
 	if err == nil {
-		t.Fatalf("Evaluate returned nil error for unknown policy profile")
+		t.Fatalf("NewEngine returned nil error for unknown policy profile")
 	}
 }
 
 func TestEvaluateCIStrictReportsPolicyHookLimitation(t *testing.T) {
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(Request{
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(Request{
 		Package:  testPackage(),
 		Evidence: []Evidence{testEvidence(reasons.SourceUnavailable, "MEDIUM", schema.DecisionEffectUnknown, "Synthetic source unavailable.", "synthetic-source")},
 	})
@@ -349,7 +349,7 @@ func TestEvaluateCIStrictReportsPolicyHookLimitation(t *testing.T) {
 
 func TestEvaluatePreservesExplicitZeroTopLevelTTL(t *testing.T) {
 	zero := 0
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, TTLSeconds: &zero}).Evaluate(Request{
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, TTLSeconds: &zero}).Evaluate(Request{
 		Package:  testPackage(),
 		Evidence: []Evidence{testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")},
 	})
@@ -364,7 +364,7 @@ func TestEvaluatePreservesExplicitZeroTopLevelTTL(t *testing.T) {
 
 func TestEvaluateDefaultsNegativeTopLevelTTL(t *testing.T) {
 	negative := -1
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }, TTLSeconds: &negative}).Evaluate(Request{
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, TTLSeconds: &negative}).Evaluate(Request{
 		Package:  testPackage(),
 		Evidence: []Evidence{testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")},
 	})
@@ -381,7 +381,7 @@ func TestEvaluateAcceptsZeroSourceTTL(t *testing.T) {
 	evidence := testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")
 	evidence.SourceRef.TTLSeconds = 0
 
-	verdict, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: []Evidence{evidence}})
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{Package: testPackage(), Evidence: []Evidence{evidence}})
 	if err != nil {
 		t.Fatalf("Evaluate returned error for zero source_ref ttl_seconds: %v", err)
 	}
@@ -493,7 +493,7 @@ func TestEvaluateRejectsSchemaInvalidEvidence(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewEngine(Options{Now: func() time.Time { return fixedNow }}).Evaluate(tt.request)
+			_, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(tt.request)
 			if err == nil {
 				t.Fatalf("Evaluate returned nil error for invalid input")
 			}
@@ -550,6 +550,15 @@ func testEvidence(code, severity string, effect schema.DecisionEffect, message, 
 		},
 		SourceRef: ptr(testSourceRef(sourceRefID)),
 	}
+}
+
+func mustEngine(t *testing.T, options Options) Engine {
+	t.Helper()
+	engine, err := NewEngine(options)
+	if err != nil {
+		t.Fatalf("NewEngine returned error: %v", err)
+	}
+	return engine
 }
 
 func ptr[T any](value T) *T {

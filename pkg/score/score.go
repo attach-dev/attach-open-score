@@ -60,21 +60,19 @@ type Engine struct {
 	policyProfile string
 	engineVersion string
 	ttlSeconds    int
-	configError   error
 }
 
-func NewEngine(options Options) Engine {
+func NewEngine(options Options) (Engine, error) {
 	now := options.Now
 	if now == nil {
 		now = time.Now
 	}
 
 	profile := options.PolicyProfile
-	var configError error
 	if profile == "" {
 		profile = ProfileLocalDevDefault
 	} else if !isKnownPolicyProfile(profile) {
-		configError = fmt.Errorf("unknown policy profile %q", profile)
+		return Engine{}, fmt.Errorf("unknown policy profile %q", profile)
 	}
 
 	engineVersion := options.EngineVersion
@@ -92,14 +90,10 @@ func NewEngine(options Options) Engine {
 		policyProfile: profile,
 		engineVersion: engineVersion,
 		ttlSeconds:    ttl,
-		configError:   configError,
-	}
+	}, nil
 }
 
 func (e Engine) Evaluate(request Request) (schema.Verdict, error) {
-	if e.configError != nil {
-		return schema.Verdict{}, e.configError
-	}
 	if err := validatePackage(request.Package); err != nil {
 		return schema.Verdict{}, err
 	}
