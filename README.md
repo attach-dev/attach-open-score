@@ -14,6 +14,7 @@ Start here:
 - `docs/LIMITATIONS.md` — what v0 can and cannot guarantee.
 - `spec/v0/score.schema.json` — machine-readable JSON Schema draft.
 - `docs/plans/local-dogfood-score-walkthrough.md` — offline local dogfood walkthrough for inspecting synthetic ALLOW / ASK / DENY / UNKNOWN fixture verdicts.
+- `docs/plans/2026-05-07-language-and-layout-decision.md` — ADR recording the Go-first core + JSON schema as the cross-language contract (retroactive).
 
 Initial tooling:
 
