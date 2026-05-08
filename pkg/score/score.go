@@ -216,6 +216,9 @@ func validateReason(reason schema.Reason) error {
 	if requiresSourceRef(reason.Code) && len(reason.SourceRefIDs) == 0 {
 		return fmt.Errorf("reason %q requires at least one source_ref_id", reason.Code)
 	}
+	if strings.HasPrefix(reason.Code, "X_") && reason.DecisionEffect != schema.DecisionEffectNone && len(reason.SourceRefIDs) == 0 {
+		return fmt.Errorf("experimental reason %q with effect %s requires at least one source_ref_id", reason.Code, reason.DecisionEffect)
+	}
 	if err := validateKnownReasonEffect(reason); err != nil {
 		return err
 	}

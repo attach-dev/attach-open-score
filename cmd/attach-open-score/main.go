@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -27,8 +29,8 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 }
 
 func runE(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
-	if idx, subcommand := firstPositional(args); subcommand == "score" {
-		return runScore(args[idx+1:], stdin, stdout, stderr)
+	if len(args) > 0 && args[0] == "score" {
+		return runScore(args[1:], stdin, stdout, stderr)
 	}
 	return runFixtureValidation(args, stdout, stderr)
 }
@@ -78,9 +80,9 @@ func runScore(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 		return err
 	}
 
-	var request schema.Request
-	if err := json.Unmarshal(data, &request); err != nil {
-		return fmt.Errorf("invalid JSON request: %w", err)
+	request, err := decodeScoreRequest(data)
+	if err != nil {
+		return err
 	}
 
 	engineProfile := *profile
@@ -108,39 +110,104 @@ func runScore(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	return err
 }
 
+func decodeScoreRequest(data []byte) (schema.Request, error) {
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+
+	var request schema.Request
+	if err := decoder.Decode(&request); err != nil {
+		return schema.Request{}, fmt.Errorf("invalid JSON request: %w", err)
+	}
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		return schema.Request{}, fmt.Errorf("invalid JSON request: trailing data after request object")
+	}
+	if err := validateRequiredJSONFields(data); err != nil {
+		return schema.Request{}, err
+	}
+	if len(request.Evidence) == 0 {
+		return schema.Request{}, fmt.Errorf("score request requires at least one evidence item")
+	}
+	for i, evidence := range request.Evidence {
+		if strings.HasPrefix(evidence.Reason.Code, "X_") && evidence.Reason.DecisionEffect != schema.DecisionEffectNone {
+			if len(evidence.Reason.SourceRefIDs) == 0 || evidence.SourceRef == nil {
+				return schema.Request{}, fmt.Errorf("score request evidence[%d] experimental reason %q with effect %s requires source_ref provenance", i, evidence.Reason.Code, evidence.Reason.DecisionEffect)
+			}
+		}
+	}
+	return request, nil
+}
+
+func validateRequiredJSONFields(data []byte) error {
+	var top map[string]json.RawMessage
+	if err := json.Unmarshal(data, &top); err != nil {
+		return fmt.Errorf("invalid JSON request: %w", err)
+	}
+	if _, ok := top["mode"]; ok {
+		return fmt.Errorf("score request field %q is not supported; use --policy-profile", "mode")
+	}
+
+	var pkg map[string]json.RawMessage
+	if err := json.Unmarshal(top["package"], &pkg); err != nil {
+		return fmt.Errorf("invalid JSON request package: %w", err)
+	}
+	if raw, ok := pkg["resolved"]; !ok {
+		return fmt.Errorf("score request package.resolved is required")
+	} else if err := requireJSONBool(raw, "package.resolved"); err != nil {
+		return err
+	}
+
+	var evidenceItems []map[string]json.RawMessage
+	if err := json.Unmarshal(top["evidence"], &evidenceItems); err != nil {
+		return fmt.Errorf("invalid JSON request evidence: %w", err)
+	}
+	for i, evidence := range evidenceItems {
+		sourceRefRaw, ok := evidence["source_ref"]
+		if !ok {
+			continue
+		}
+		var sourceRef map[string]json.RawMessage
+		if err := json.Unmarshal(sourceRefRaw, &sourceRef); err != nil {
+			return fmt.Errorf("invalid JSON request evidence[%d].source_ref: %w", i, err)
+		}
+		if raw, ok := sourceRef["ttl_seconds"]; !ok {
+			return fmt.Errorf("score request evidence[%d].source_ref.ttl_seconds is required", i)
+		} else if err := requireJSONInt(raw, fmt.Sprintf("evidence[%d].source_ref.ttl_seconds", i)); err != nil {
+			return err
+		}
+		if raw, ok := sourceRef["attribution_required"]; !ok {
+			return fmt.Errorf("score request evidence[%d].source_ref.attribution_required is required", i)
+		} else if err := requireJSONBool(raw, fmt.Sprintf("evidence[%d].source_ref.attribution_required", i)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func requireJSONBool(raw json.RawMessage, path string) error {
+	if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+		return fmt.Errorf("score request %s must be a boolean", path)
+	}
+	var value bool
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return fmt.Errorf("score request %s must be a boolean", path)
+	}
+	return nil
+}
+
+func requireJSONInt(raw json.RawMessage, path string) error {
+	if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+		return fmt.Errorf("score request %s must be an integer", path)
+	}
+	var value int
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return fmt.Errorf("score request %s must be an integer", path)
+	}
+	return nil
+}
+
 func readScoreInput(path string, stdin io.Reader) ([]byte, error) {
 	if path == "-" {
 		return io.ReadAll(stdin)
 	}
 	return os.ReadFile(path)
-}
-
-func firstPositional(args []string) (int, string) {
-	for i := 0; i < len(args); i++ {
-		arg := args[i]
-		if arg == "--" {
-			if i+1 < len(args) {
-				return i + 1, args[i+1]
-			}
-			return -1, ""
-		}
-		if strings.HasPrefix(arg, "-") && arg != "-" {
-			if flagConsumesValue(arg) && !strings.Contains(arg, "=") && i+1 < len(args) {
-				i++
-			}
-			continue
-		}
-		return i, arg
-	}
-	return -1, ""
-}
-
-func flagConsumesValue(arg string) bool {
-	name := strings.TrimLeft(arg, "-")
-	switch name {
-	case "root", "input", "policy-profile":
-		return true
-	default:
-		return false
-	}
 }
