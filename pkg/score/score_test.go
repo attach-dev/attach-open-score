@@ -454,6 +454,24 @@ func TestEvaluateRejectsSchemaInvalidEvidence(t *testing.T) {
 			}}}},
 		},
 		{
+			name: "experimental allow reason without source refs",
+			request: Request{Package: testPackage(), Evidence: []Evidence{{Reason: schema.Reason{
+				Code:           "X_EXPERIMENTAL_ALLOW",
+				Severity:       "INFO",
+				DecisionEffect: schema.DecisionEffectAllow,
+				Message:        "Experimental allow finding lacks provenance.",
+			}}}},
+		},
+		{
+			name: "experimental deny reason without source refs",
+			request: Request{Package: testPackage(), Evidence: []Evidence{{Reason: schema.Reason{
+				Code:           "X_EXPERIMENTAL_DENY",
+				Severity:       "HIGH",
+				DecisionEffect: schema.DecisionEffectDeny,
+				Message:        "Experimental deny finding lacks provenance.",
+			}}}},
+		},
+		{
 			name:    "missing reason message",
 			request: Request{Package: testPackage(), Evidence: []Evidence{testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "", "synthetic-source")}},
 		},

@@ -15,7 +15,8 @@ Current shipped behavior:
 - `fixtures/v0/*.json` are synthetic, public-safe verdict examples.
 - `go run ./cmd/attach-open-score --root .` validates the fixture set and prints each fixture path with its decision.
 - The full verdict JSON in each fixture includes `decision`, `score`, `confidence`, `reasons`, `source_refs`, `evaluated_at`, `ttl_seconds`, and `limitations`.
-- The Go scorer API can produce verdicts from normalized in-memory evidence, but there is not yet a public CLI command that scores arbitrary package names or fetches network evidence.
+- The Go scorer API and `score --input` CLI can produce verdicts from normalized local evidence request JSON.
+- There is not yet a public CLI command that scores arbitrary package names or fetches network evidence.
 
 Non-goals for this walkthrough:
 
@@ -106,7 +107,9 @@ Use this output to confirm that a fixture does not hide unsupported inputs. The 
 
 ## Step 4: dogfood with local-safe data only
 
-Until the CLI grows an explicit `score --input` or equivalent command, local dogfood should use one of these safe paths:
+The CLI can also score normalized local evidence request JSON with `score --input`. That input is not a fixture verdict and must use the v0 request contract: top-level `package` plus one or more `evidence` items, with source-backed reasons preserving matching `source_ref` metadata. Unknown fields, ignored `mode`, and verdict-shaped fixture files are rejected so typos do not silently score as empty evidence; experimental `X_*` reasons with blocking/non-informational effects must carry source-ref provenance.
+
+Local dogfood should use one of these safe paths:
 
 1. Read the existing synthetic fixtures as canonical examples of the v0 output shape.
 2. Create a temporary, uncommitted copy of a fixture and change only synthetic
@@ -126,7 +129,7 @@ Temporary local data must remain public-safe if it is committed later:
 
 ## Step 5: run the offline test suite
 
-Before sending a docs PR, run:
+Before sending a change, run:
 
 ```bash
 go test ./...
@@ -145,8 +148,8 @@ The default tests are expected to be offline and deterministic. Network adapter 
 
 ## Follow-up candidates
 
-These are intentionally out of scope for this docs-only PR:
+These remain out of scope for this local walkthrough:
 
 - Add a first-class CLI command to print fixture summaries without a Python snippet.
-- Add a `score --input evidence.json` CLI once the input evidence format is stable.
+- Add richer `score --input` examples once the input evidence format is stable.
 - Add opt-in network adapters after source terms, attribution, tests, and fixture policy are reviewed.

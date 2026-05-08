@@ -133,6 +133,203 @@ func TestScoreCommandMalformedJSON(t *testing.T) {
 	}
 }
 
+func TestScoreCommandRejectsUnknownJSONFields(t *testing.T) {
+	path := writeJSONFile(t, `{
+		"package": {
+			"ecosystem": "npm",
+			"name": "synthetic-package",
+			"version": "1.0.0",
+			"purl": "pkg:npm/synthetic-package@1.0.0",
+			"resolved": true
+		},
+		"evidences": []
+	}`)
+
+	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "unknown field \"evidences\"") {
+		t.Fatalf("stderr = %q, want unknown field error", stderr)
+	}
+}
+
+func TestScoreCommandRejectsVerdictShapedInput(t *testing.T) {
+	path := filepath.Join("..", "..", "fixtures", "v0", "allow-clean-synthetic.json")
+
+	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "unknown field \"schema_version\"") {
+		t.Fatalf("stderr = %q, want verdict-shaped input rejection", stderr)
+	}
+}
+
+func TestScoreCommandRejectsEmptyEvidence(t *testing.T) {
+	path := writeJSONFile(t, `{
+		"package": {
+			"ecosystem": "npm",
+			"name": "synthetic-package",
+			"version": "1.0.0",
+			"purl": "pkg:npm/synthetic-package@1.0.0",
+			"resolved": true
+		},
+		"evidence": []
+	}`)
+
+	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "requires at least one evidence item") {
+		t.Fatalf("stderr = %q, want evidence validation error", stderr)
+	}
+}
+
+func TestScoreCommandRejectsUnknownPreSubcommandFlag(t *testing.T) {
+	path := writeRequestFile(t, testScoreRequest(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone))
+
+	code, stdout, stderr := runCommand(t, []string{"--bogus", "score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "flag provided but not defined: -bogus") {
+		t.Fatalf("stderr = %q, want unknown flag error", stderr)
+	}
+}
+
+func TestScoreCommandRejectsMissingRequiredZeroValueFields(t *testing.T) {
+	path := writeJSONFile(t, `{
+		"package": {
+			"ecosystem": "npm",
+			"name": "synthetic-package",
+			"version": "1.0.0",
+			"purl": "pkg:npm/synthetic-package@1.0.0"
+		},
+		"evidence": [{
+			"reason": {
+				"code": "NO_KNOWN_VULNERABILITIES",
+				"severity": "INFO",
+				"decision_effect": "NONE",
+				"message": "Synthetic evidence.",
+				"source_ref_ids": ["synthetic-source"]
+			},
+			"source_ref": {
+				"id": "synthetic-source",
+				"source": "synthetic-fixture",
+				"url": "https://example.invalid/source",
+				"retrieved_at": "2026-05-06T11:50:00Z",
+				"license_or_terms_url": "https://example.invalid/terms",
+				"attribution": "Synthetic fixture data.",
+				"redistribution": "allowed",
+				"public_display": "allowed"
+			}
+		}]
+	}`)
+
+	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "package.resolved is required") {
+		t.Fatalf("stderr = %q, want required resolved error", stderr)
+	}
+}
+
+func TestScoreCommandRejectsMissingSourceRefRequiredFields(t *testing.T) {
+	request := testScoreRequest(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone)
+	data := string(mustMarshalRequest(t, request))
+	data = strings.ReplaceAll(data, `,"ttl_seconds":86400`, "")
+	path := writeJSONFile(t, data)
+
+	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "source_ref.ttl_seconds is required") {
+		t.Fatalf("stderr = %q, want required ttl_seconds error", stderr)
+	}
+}
+
+func TestScoreCommandRejectsNullRequiredZeroValueFields(t *testing.T) {
+	request := testScoreRequest(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone)
+	data := string(mustMarshalRequest(t, request))
+	data = strings.ReplaceAll(data, `"resolved":true`, `"resolved":null`)
+	data = strings.ReplaceAll(data, `"ttl_seconds":86400`, `"ttl_seconds":null`)
+	data = strings.ReplaceAll(data, `"attribution_required":false`, `"attribution_required":null`)
+	path := writeJSONFile(t, data)
+
+	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "package.resolved must be a boolean") {
+		t.Fatalf("stderr = %q, want null bool rejection", stderr)
+	}
+}
+
+func TestScoreCommandRejectsIgnoredModeField(t *testing.T) {
+	request := testScoreRequest(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone)
+	data := string(mustMarshalRequest(t, request))
+	data = strings.TrimSuffix(data, "}") + `,"mode":"ci-strict"}`
+	path := writeJSONFile(t, data)
+
+	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "use --policy-profile") {
+		t.Fatalf("stderr = %q, want mode rejection", stderr)
+	}
+}
+
+func TestScoreCommandRejectsExperimentalReasonWithoutProvenance(t *testing.T) {
+	for _, effect := range []schema.DecisionEffect{schema.DecisionEffectAllow, schema.DecisionEffectAsk, schema.DecisionEffectDeny, schema.DecisionEffectUnknown} {
+		t.Run(string(effect), func(t *testing.T) {
+			request := testScoreRequest("X_SYNTHETIC_"+string(effect), "HIGH", effect)
+			request.Evidence[0].Reason.SourceRefIDs = nil
+			request.Evidence[0].SourceRef = nil
+			path := writeRequestFile(t, request)
+
+			code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
+			if code != 1 {
+				t.Fatalf("run exited %d, want 1", code)
+			}
+			if stdout != "" {
+				t.Fatalf("stdout = %q, want empty", stdout)
+			}
+			if !strings.Contains(stderr, "requires source_ref provenance") {
+				t.Fatalf("stderr = %q, want experimental provenance rejection", stderr)
+			}
+		})
+	}
+}
+
 func TestScoreCommandEngineValidationError(t *testing.T) {
 	path := writeRequestFile(t, schema.Request{
 		Package: schema.PackageIdentity{
@@ -141,6 +338,14 @@ func TestScoreCommandEngineValidationError(t *testing.T) {
 			Resolved: true,
 			Version:  "1.0.0",
 		},
+		Evidence: []schema.Evidence{{
+			Reason: schema.Reason{
+				Code:           reasons.NoKnownVulnerabilities,
+				Severity:       "INFO",
+				DecisionEffect: schema.DecisionEffectNone,
+				Message:        "Synthetic evidence for CLI validation tests.",
+			},
+		}},
 	})
 
 	code, stdout, stderr := runCommand(t, []string{"score", "--input", path}, "")
@@ -175,8 +380,13 @@ func runCommand(t *testing.T, args []string, stdin string) (int, string, string)
 
 func writeRequestFile(t *testing.T, request schema.Request) string {
 	t.Helper()
+	return writeJSONFile(t, string(mustMarshalRequest(t, request)))
+}
+
+func writeJSONFile(t *testing.T, content string) string {
+	t.Helper()
 	path := filepath.Join(t.TempDir(), "request.json")
-	if err := os.WriteFile(path, mustMarshalRequest(t, request), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 		t.Fatalf("write request: %v", err)
 	}
 	return path
