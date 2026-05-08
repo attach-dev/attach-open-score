@@ -251,6 +251,7 @@ func defaultDecisionEffect(code string) (schema.DecisionEffect, bool) {
 		reasons.PossibleTyposquat,
 		reasons.DependencyConfusionRisk,
 		reasons.LowRepositoryHealth,
+		reasons.ReleaseRecencyStale,
 		reasons.SourceStale,
 		reasons.ConflictingSourceData:
 		return schema.DecisionEffectAsk, true
@@ -262,7 +263,9 @@ func defaultDecisionEffect(code string) (schema.DecisionEffect, bool) {
 		return schema.DecisionEffectUnknown, true
 	case reasons.NoKnownVulnerabilities,
 		reasons.RepositoryMappingUncertain,
-		reasons.MaintainerActivityLow:
+		reasons.MaintainerActivityLow,
+		reasons.ReleaseRecencyFresh,
+		reasons.ReleaseRecencyNearStale:
 		return schema.DecisionEffectNone, true
 	default:
 		return "", false
@@ -289,6 +292,9 @@ func requiresSourceRef(code string) bool {
 		reasons.LowRepositoryHealth,
 		reasons.RepositoryMappingUncertain,
 		reasons.MaintainerActivityLow,
+		reasons.ReleaseRecencyStale,
+		reasons.ReleaseRecencyFresh,
+		reasons.ReleaseRecencyNearStale,
 		reasons.SourceStale,
 		reasons.ConflictingSourceData:
 		return true

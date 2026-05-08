@@ -1,0 +1,55 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "v0-draft",
+  "package": {
+    "ecosystem": "npm",
+    "name": "synthetic-fresh-release",
+    "version": "2.0.0",
+    "purl": "pkg:npm/synthetic-fresh-release@2.0.0",
+    "requested_spec": "latest",
+    "resolved": true
+  },
+  "decision": "ALLOW",
+  "score": 5,
+  "confidence": "MEDIUM",
+  "reasons": [
+    {
+      "code": "RELEASE_RECENCY_FRESH",
+      "severity": "INFO",
+      "decision_effect": "NONE",
+      "message": "Synthetic fixture: last observed release is inside the default fresh-release window.",
+      "source_ref_ids": [
+        "synthetic-registry-fresh-release"
+      ],
+      "details": {
+        "last_release_at": "2026-02-01T00:00:00Z",
+        "age_days": 93,
+        "stale_after_days": 730,
+        "fresh_within_days": 365,
+        "fixture": "synthetic"
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "synthetic-registry-fresh-release",
+      "source": "synthetic-registry",
+      "source_id": "synthetic-fresh-release@2.0.0",
+      "url": "https://example.invalid/registry/synthetic-fresh-release/2.0.0",
+      "retrieved_at": "2026-05-05T00:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://example.invalid/terms",
+      "attribution": "Synthetic registry release metadata fixture; not real upstream data.",
+      "attribution_required": false,
+      "redistribution": "allowed",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-05T00:00:00Z",
+  "ttl_seconds": 86400,
+  "limitations": [
+    "Synthetic fixture; not a real package evaluation.",
+    "Release recency is a deterministic review signal, not evidence of safety by itself."
+  ]
+}
