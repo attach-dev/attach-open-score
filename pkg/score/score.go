@@ -35,16 +35,9 @@ const (
 
 var reasonCodePattern = regexp.MustCompile(`^(X_)?[A-Z][A-Z0-9_]*$`)
 
-type Request struct {
-	Package  schema.PackageIdentity
-	Evidence []Evidence
-	Mode     string
-}
+type Request = schema.Request
 
-type Evidence struct {
-	Reason    schema.Reason
-	SourceRef *schema.SourceRef
-}
+type Evidence = schema.Evidence
 
 type Result = schema.Verdict
 

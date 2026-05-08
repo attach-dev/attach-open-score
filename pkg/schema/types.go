@@ -64,6 +64,17 @@ type SourceRef struct {
 	PublicDisplay       string `json:"public_display"`
 }
 
+type Request struct {
+	Package  PackageIdentity `json:"package"`
+	Evidence []Evidence      `json:"evidence,omitempty"`
+	Mode     string          `json:"mode,omitempty"`
+}
+
+type Evidence struct {
+	Reason    Reason     `json:"reason"`
+	SourceRef *SourceRef `json:"source_ref,omitempty"`
+}
+
 type Verdict struct {
 	SchemaVersion string          `json:"schema_version"`
 	PolicyProfile string          `json:"policy_profile,omitempty"`
