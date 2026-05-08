@@ -25,6 +25,8 @@ const (
 	LowRepositoryHealth        = "LOW_REPOSITORY_HEALTH"
 	RepositoryMappingUncertain = "REPOSITORY_MAPPING_UNCERTAIN"
 	MaintainerActivityLow      = "MAINTAINER_ACTIVITY_LOW"
+	ReleaseRecencyStale        = "RELEASE_RECENCY_STALE"
+	ReleaseRecencyFresh        = "RELEASE_RECENCY_FRESH"
 
 	SourceUnavailable     = "SOURCE_UNAVAILABLE"
 	SourceTermsBlocked    = "SOURCE_TERMS_BLOCKED"
@@ -54,6 +56,8 @@ var Known = map[string]struct{}{
 	LowRepositoryHealth:        {},
 	RepositoryMappingUncertain: {},
 	MaintainerActivityLow:      {},
+	ReleaseRecencyStale:        {},
+	ReleaseRecencyFresh:        {},
 	SourceUnavailable:          {},
 	SourceTermsBlocked:         {},
 	SourceStale:                {},
