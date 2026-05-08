@@ -9,6 +9,7 @@ import (
 	"github.com/attach-dev/attach-open-score/internal/fixtures"
 	"github.com/attach-dev/attach-open-score/pkg/reasons"
 	"github.com/attach-dev/attach-open-score/pkg/schema"
+	"github.com/attach-dev/attach-open-score/pkg/signals"
 )
 
 var fixedNow = time.Date(2026, 5, 6, 11, 50, 0, 0, time.UTC)
@@ -318,6 +319,41 @@ func TestEvaluateCIStrictPreservesRiskScoreWhenUpgradingAskToDeny(t *testing.T) 
 		t.Fatalf("score = %v, want preserved critical risk score %d", verdict.Score, severityCriticalScore)
 	}
 	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluateReleaseRecencyStaleAsksAndCIStrictDenies(t *testing.T) {
+	reason, err := signals.DeriveReleaseRecency(fixedNow.Add(-(731 * 24 * time.Hour)), fixedNow, "synthetic-registry", nil)
+	if err != nil {
+		t.Fatalf("DeriveReleaseRecency returned error: %v", err)
+	}
+	evidence := []Evidence{{
+		Reason:    reason,
+		SourceRef: ptr(testSourceRef("synthetic-registry")),
+	}}
+
+	localVerdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: evidence,
+	})
+	if err != nil {
+		t.Fatalf("local Evaluate returned error: %v", err)
+	}
+	if localVerdict.Decision != schema.DecisionAsk {
+		t.Fatalf("local decision = %s, want ASK", localVerdict.Decision)
+	}
+	assertSchemaValid(t, localVerdict)
+
+	ciVerdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: evidence,
+	})
+	if err != nil {
+		t.Fatalf("ci Evaluate returned error: %v", err)
+	}
+	if ciVerdict.Decision != schema.DecisionDeny {
+		t.Fatalf("ci decision = %s, want DENY", ciVerdict.Decision)
+	}
+	assertSchemaValid(t, ciVerdict)
 }
 
 func TestNewEngineRejectsUnknownPolicyProfile(t *testing.T) {

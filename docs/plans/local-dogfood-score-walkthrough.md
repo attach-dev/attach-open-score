@@ -43,7 +43,10 @@ Expected decision coverage from the current fixture set:
 
 ```text
 valid fixtures/v0/allow-clean-synthetic.json ALLOW
+valid fixtures/v0/allow-fresh-release-recency.json ALLOW
+valid fixtures/v0/allow-near-stale-release-recency.json ALLOW
 valid fixtures/v0/ask-new-version-install-script.json ASK
+valid fixtures/v0/ask-stale-release-recency.json ASK
 valid fixtures/v0/deny-known-critical-vulnerability.json DENY
 valid fixtures/v0/unknown-source-unavailable.json UNKNOWN
 ```
@@ -70,7 +73,10 @@ Expected output:
 
 ```text
 fixtures/v0/allow-clean-synthetic.json: decision=ALLOW score=8 confidence=MEDIUM
+fixtures/v0/allow-fresh-release-recency.json: decision=ALLOW score=5 confidence=MEDIUM
+fixtures/v0/allow-near-stale-release-recency.json: decision=ALLOW score=20 confidence=MEDIUM
 fixtures/v0/ask-new-version-install-script.json: decision=ASK score=56 confidence=MEDIUM
+fixtures/v0/ask-stale-release-recency.json: decision=ASK score=45 confidence=MEDIUM
 fixtures/v0/deny-known-critical-vulnerability.json: decision=DENY score=96 confidence=HIGH
 fixtures/v0/unknown-source-unavailable.json: decision=UNKNOWN score=null confidence=LOW
 ```
@@ -107,9 +113,9 @@ Use this output to confirm that a fixture does not hide unsupported inputs. The 
 
 ## Step 4: dogfood with local-safe data only
 
-The CLI can also score normalized local evidence request JSON with `score --input`. That input is not a fixture verdict and must use the v0 request contract: top-level `package` plus one or more `evidence` items, with source-backed reasons preserving matching `source_ref` metadata. Unknown fields, ignored `mode`, and verdict-shaped fixture files are rejected so typos do not silently score as empty evidence; experimental `X_*` reasons with blocking/non-informational effects must carry source-ref provenance.
+The CLI now supports explicit offline scoring from normalized local evidence request JSON via `score --input`. That input is not a fixture verdict and must use the v0 request contract: top-level `package` plus one or more `evidence` items, with source-backed reasons preserving matching `source_ref` metadata. Unknown fields, ignored `mode`, and verdict-shaped fixture files are rejected so typos do not silently score as empty evidence; experimental `X_*` reasons with blocking/non-informational effects must carry source-ref provenance.
 
-Local dogfood should use one of these safe paths:
+For local dogfood, use only public-safe inputs:
 
 1. Read the existing synthetic fixtures as canonical examples of the v0 output shape.
 2. Create a temporary, uncommitted copy of a fixture and change only synthetic
