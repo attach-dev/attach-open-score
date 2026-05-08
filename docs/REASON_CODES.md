@@ -68,7 +68,8 @@ Reason codes explain why Attach Open Score returned a decision. Codes are stable
 | `REPOSITORY_MAPPING_UNCERTAIN` | LOW | NONE | Package-to-repository mapping is uncertain, so repo signals were down-weighted. |
 | `MAINTAINER_ACTIVITY_LOW` | LOW | NONE | Maintainer or release activity appears low; informational in v0. |
 | `RELEASE_RECENCY_STALE` | MEDIUM | ASK | Last observed package release is older than the configured stale-release threshold. |
-| `RELEASE_RECENCY_FRESH` | INFO/LOW | NONE | Last observed package release is within or near the configured fresh-release window. |
+| `RELEASE_RECENCY_FRESH` | INFO | NONE | Last observed package release is within the configured fresh-release window. |
+| `RELEASE_RECENCY_NEAR_STALE` | LOW | NONE | Last observed package release is outside the fresh window but not older than the stale-release threshold. |
 
 ### Source and confidence
 

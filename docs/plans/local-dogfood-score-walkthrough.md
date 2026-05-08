@@ -42,7 +42,10 @@ Expected decision coverage from the current fixture set:
 
 ```text
 valid fixtures/v0/allow-clean-synthetic.json ALLOW
+valid fixtures/v0/allow-fresh-release-recency.json ALLOW
+valid fixtures/v0/allow-near-stale-release-recency.json ALLOW
 valid fixtures/v0/ask-new-version-install-script.json ASK
+valid fixtures/v0/ask-stale-release-recency.json ASK
 valid fixtures/v0/deny-known-critical-vulnerability.json DENY
 valid fixtures/v0/unknown-source-unavailable.json UNKNOWN
 ```
@@ -69,7 +72,10 @@ Expected output:
 
 ```text
 fixtures/v0/allow-clean-synthetic.json: decision=ALLOW score=8 confidence=MEDIUM
+fixtures/v0/allow-fresh-release-recency.json: decision=ALLOW score=5 confidence=MEDIUM
+fixtures/v0/allow-near-stale-release-recency.json: decision=ALLOW score=20 confidence=MEDIUM
 fixtures/v0/ask-new-version-install-script.json: decision=ASK score=56 confidence=MEDIUM
+fixtures/v0/ask-stale-release-recency.json: decision=ASK score=45 confidence=MEDIUM
 fixtures/v0/deny-known-critical-vulnerability.json: decision=DENY score=96 confidence=HIGH
 fixtures/v0/unknown-source-unavailable.json: decision=UNKNOWN score=null confidence=LOW
 ```
@@ -106,7 +112,7 @@ Use this output to confirm that a fixture does not hide unsupported inputs. The 
 
 ## Step 4: dogfood with local-safe data only
 
-Until the CLI grows an explicit `score --input` or equivalent command, local dogfood should use one of these safe paths:
+The CLI now supports explicit offline scoring from a local request JSON via `score --input`. For local dogfood, use only public-safe inputs:
 
 1. Read the existing synthetic fixtures as canonical examples of the v0 output shape.
 2. Create a temporary, uncommitted copy of a fixture and change only synthetic
@@ -148,5 +154,5 @@ The default tests are expected to be offline and deterministic. Network adapter 
 These are intentionally out of scope for this docs-only PR:
 
 - Add a first-class CLI command to print fixture summaries without a Python snippet.
-- Add a `score --input evidence.json` CLI once the input evidence format is stable.
+- Add richer `score --input` examples once the input evidence format is stable.
 - Add opt-in network adapters after source terms, attribution, tests, and fixture policy are reviewed.

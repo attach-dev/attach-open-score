@@ -4,27 +4,27 @@
   "engine_version": "v0-draft",
   "package": {
     "ecosystem": "npm",
-    "name": "synthetic-stale-release",
-    "version": "4.2.0",
-    "purl": "pkg:npm/synthetic-stale-release@4.2.0",
+    "name": "synthetic-near-stale-release",
+    "version": "3.1.0",
+    "purl": "pkg:npm/synthetic-near-stale-release@3.1.0",
     "requested_spec": "latest",
     "resolved": true
   },
-  "decision": "ASK",
-  "score": 45,
+  "decision": "ALLOW",
+  "score": 20,
   "confidence": "MEDIUM",
   "reasons": [
     {
-      "code": "RELEASE_RECENCY_STALE",
-      "severity": "MEDIUM",
-      "decision_effect": "ASK",
-      "message": "Synthetic fixture: last observed release is older than the default stale-release threshold.",
+      "code": "RELEASE_RECENCY_NEAR_STALE",
+      "severity": "LOW",
+      "decision_effect": "NONE",
+      "message": "Synthetic fixture: last observed release is outside the fresh window but below the stale-release threshold.",
       "source_ref_ids": [
-        "synthetic-registry-release"
+        "synthetic-registry-near-stale-release"
       ],
       "details": {
-        "last_release_at": "2024-05-01T00:00:00Z",
-        "age_days": 734,
+        "last_release_at": "2025-01-01T00:00:00Z",
+        "age_days": 489,
         "stale_after_days": 730,
         "fresh_within_days": 365,
         "fixture": "synthetic"
@@ -33,10 +33,10 @@
   ],
   "source_refs": [
     {
-      "id": "synthetic-registry-release",
+      "id": "synthetic-registry-near-stale-release",
       "source": "synthetic-registry",
-      "source_id": "synthetic-stale-release@4.2.0",
-      "url": "https://example.invalid/registry/synthetic-stale-release/4.2.0",
+      "source_id": "synthetic-near-stale-release@3.1.0",
+      "url": "https://example.invalid/registry/synthetic-near-stale-release/3.1.0",
       "retrieved_at": "2026-05-05T00:00:00Z",
       "ttl_seconds": 86400,
       "license_or_terms_url": "https://example.invalid/terms",
@@ -50,6 +50,6 @@
   "ttl_seconds": 86400,
   "limitations": [
     "Synthetic fixture; not a real package evaluation.",
-    "Release recency is a deterministic review signal, not evidence of malicious behavior by itself."
+    "Near-stale release recency is informational in v0 and does not prove a package is unsafe."
   ]
 }

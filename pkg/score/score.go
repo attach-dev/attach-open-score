@@ -264,7 +264,8 @@ func defaultDecisionEffect(code string) (schema.DecisionEffect, bool) {
 	case reasons.NoKnownVulnerabilities,
 		reasons.RepositoryMappingUncertain,
 		reasons.MaintainerActivityLow,
-		reasons.ReleaseRecencyFresh:
+		reasons.ReleaseRecencyFresh,
+		reasons.ReleaseRecencyNearStale:
 		return schema.DecisionEffectNone, true
 	default:
 		return "", false
@@ -293,6 +294,7 @@ func requiresSourceRef(code string) bool {
 		reasons.MaintainerActivityLow,
 		reasons.ReleaseRecencyStale,
 		reasons.ReleaseRecencyFresh,
+		reasons.ReleaseRecencyNearStale,
 		reasons.SourceStale,
 		reasons.ConflictingSourceData:
 		return true

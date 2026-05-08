@@ -27,6 +27,7 @@ const (
 	MaintainerActivityLow      = "MAINTAINER_ACTIVITY_LOW"
 	ReleaseRecencyStale        = "RELEASE_RECENCY_STALE"
 	ReleaseRecencyFresh        = "RELEASE_RECENCY_FRESH"
+	ReleaseRecencyNearStale    = "RELEASE_RECENCY_NEAR_STALE"
 
 	SourceUnavailable     = "SOURCE_UNAVAILABLE"
 	SourceTermsBlocked    = "SOURCE_TERMS_BLOCKED"
@@ -58,6 +59,7 @@ var Known = map[string]struct{}{
 	MaintainerActivityLow:      {},
 	ReleaseRecencyStale:        {},
 	ReleaseRecencyFresh:        {},
+	ReleaseRecencyNearStale:    {},
 	SourceUnavailable:          {},
 	SourceTermsBlocked:         {},
 	SourceStale:                {},

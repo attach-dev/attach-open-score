@@ -2,6 +2,7 @@ package signals
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/attach-dev/attach-open-score/pkg/reasons"
@@ -30,6 +31,9 @@ func DeriveReleaseRecency(lastReleaseAt, now time.Time, sourceRefID string, opts
 	if now.IsZero() {
 		return schema.Reason{}, fmt.Errorf("now is required")
 	}
+	if strings.TrimSpace(sourceRefID) == "" {
+		return schema.Reason{}, fmt.Errorf("sourceRefID is required")
+	}
 	if lastReleaseAt.After(now) {
 		return schema.Reason{}, fmt.Errorf("lastReleaseAt must not be in the future")
 	}
@@ -46,6 +50,15 @@ func DeriveReleaseRecency(lastReleaseAt, now time.Time, sourceRefID string, opts
 			options.FreshWithin = opts.FreshWithin
 		}
 	}
+	if options.StaleAfter <= 0 {
+		return schema.Reason{}, fmt.Errorf("stale threshold must be positive")
+	}
+	if options.FreshWithin <= 0 {
+		return schema.Reason{}, fmt.Errorf("fresh threshold must be positive")
+	}
+	if options.StaleAfter%(24*time.Hour) != 0 || options.FreshWithin%(24*time.Hour) != 0 {
+		return schema.Reason{}, fmt.Errorf("release-recency thresholds must be whole-day durations")
+	}
 	if options.StaleAfter <= options.FreshWithin {
 		return schema.Reason{}, fmt.Errorf("stale threshold must be greater than fresh threshold")
 	}
@@ -56,13 +69,13 @@ func DeriveReleaseRecency(lastReleaseAt, now time.Time, sourceRefID string, opts
 	freshWithinDays := int(options.FreshWithin / (24 * time.Hour))
 
 	reason := schema.Reason{
-		Code:           reasons.ReleaseRecencyFresh,
+		Code:           reasons.ReleaseRecencyNearStale,
 		Severity:       "LOW",
 		DecisionEffect: schema.DecisionEffectNone,
 		Message:        fmt.Sprintf("Last release was %d days ago, between the fresh window (%d days) and stale threshold (%d days).", ageDays, freshWithinDays, staleAfterDays),
 		SourceRefIDs:   []string{sourceRefID},
 		Details: map[string]any{
-			"last_release_at":   lastReleaseAt.UTC().Format(time.RFC3339),
+			"last_release_at":   lastReleaseAt.UTC().Format(time.RFC3339Nano),
 			"age_days":          ageDays,
 			"stale_after_days":  staleAfterDays,
 			"fresh_within_days": freshWithinDays,
@@ -70,12 +83,13 @@ func DeriveReleaseRecency(lastReleaseAt, now time.Time, sourceRefID string, opts
 	}
 
 	switch {
-	case age > options.StaleAfter:
+	case ageDays > staleAfterDays:
 		reason.Code = reasons.ReleaseRecencyStale
 		reason.Severity = "MEDIUM"
 		reason.DecisionEffect = schema.DecisionEffectAsk
 		reason.Message = fmt.Sprintf("Last release was %d days ago, older than the stale threshold of %d days.", ageDays, staleAfterDays)
-	case age <= options.FreshWithin:
+	case ageDays <= freshWithinDays:
+		reason.Code = reasons.ReleaseRecencyFresh
 		reason.Severity = "INFO"
 		reason.Message = fmt.Sprintf("Last release was %d days ago, within the fresh window of %d days.", ageDays, freshWithinDays)
 	}
