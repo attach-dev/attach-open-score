@@ -118,17 +118,14 @@ func (e Engine) Evaluate(request Request) (schema.Verdict, error) {
 			}
 
 			if evidence.SourceRef != nil {
-				if err := validateSourceRef(*evidence.SourceRef); err != nil {
+				if err := appendSourceRef(&sourceRefs, seenSourceRefs, *evidence.SourceRef); err != nil {
 					return schema.Verdict{}, err
 				}
-				if existing, ok := seenSourceRefs[evidence.SourceRef.ID]; ok {
-					if !reflect.DeepEqual(sourceRefs[existing], *evidence.SourceRef) {
-						return schema.Verdict{}, fmt.Errorf("conflicting source_ref %q", evidence.SourceRef.ID)
-					}
-					continue
+			}
+			for _, sourceRef := range evidence.SourceRefs {
+				if err := appendSourceRef(&sourceRefs, seenSourceRefs, sourceRef); err != nil {
+					return schema.Verdict{}, err
 				}
-				sourceRefs = append(sourceRefs, *evidence.SourceRef)
-				seenSourceRefs[evidence.SourceRef.ID] = len(sourceRefs) - 1
 			}
 		}
 
@@ -163,6 +160,21 @@ func (e Engine) Evaluate(request Request) (schema.Verdict, error) {
 	}
 
 	return verdict, nil
+}
+
+func appendSourceRef(sourceRefs *[]schema.SourceRef, seenSourceRefs map[string]int, sourceRef schema.SourceRef) error {
+	if err := validateSourceRef(sourceRef); err != nil {
+		return err
+	}
+	if existing, ok := seenSourceRefs[sourceRef.ID]; ok {
+		if !reflect.DeepEqual((*sourceRefs)[existing], sourceRef) {
+			return fmt.Errorf("conflicting source_ref %q", sourceRef.ID)
+		}
+		return nil
+	}
+	*sourceRefs = append(*sourceRefs, sourceRef)
+	seenSourceRefs[sourceRef.ID] = len(*sourceRefs) - 1
+	return nil
 }
 
 func validatePackage(pkg schema.PackageIdentity) error {

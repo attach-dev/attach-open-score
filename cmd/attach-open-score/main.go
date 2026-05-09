@@ -129,7 +129,7 @@ func decodeScoreRequest(data []byte) (schema.Request, error) {
 	}
 	for i, evidence := range request.Evidence {
 		if strings.HasPrefix(evidence.Reason.Code, "X_") && evidence.Reason.DecisionEffect != schema.DecisionEffectNone {
-			if len(evidence.Reason.SourceRefIDs) == 0 || evidence.SourceRef == nil {
+			if len(evidence.Reason.SourceRefIDs) == 0 || (evidence.SourceRef == nil && len(evidence.SourceRefs) == 0) {
 				return schema.Request{}, fmt.Errorf("score request evidence[%d] experimental reason %q with effect %s requires source_ref provenance", i, evidence.Reason.Code, evidence.Reason.DecisionEffect)
 			}
 		}
@@ -161,24 +161,40 @@ func validateRequiredJSONFields(data []byte) error {
 		return fmt.Errorf("invalid JSON request evidence: %w", err)
 	}
 	for i, evidence := range evidenceItems {
-		sourceRefRaw, ok := evidence["source_ref"]
-		if !ok {
-			continue
+		if sourceRefRaw, ok := evidence["source_ref"]; ok {
+			if err := validateSourceRefRequiredFields(sourceRefRaw, fmt.Sprintf("evidence[%d].source_ref", i)); err != nil {
+				return err
+			}
 		}
-		var sourceRef map[string]json.RawMessage
-		if err := json.Unmarshal(sourceRefRaw, &sourceRef); err != nil {
-			return fmt.Errorf("invalid JSON request evidence[%d].source_ref: %w", i, err)
+		if sourceRefsRaw, ok := evidence["source_refs"]; ok {
+			var sourceRefs []json.RawMessage
+			if err := json.Unmarshal(sourceRefsRaw, &sourceRefs); err != nil {
+				return fmt.Errorf("invalid JSON request evidence[%d].source_refs: %w", i, err)
+			}
+			for j, sourceRefRaw := range sourceRefs {
+				if err := validateSourceRefRequiredFields(sourceRefRaw, fmt.Sprintf("evidence[%d].source_refs[%d]", i, j)); err != nil {
+					return err
+				}
+			}
 		}
-		if raw, ok := sourceRef["ttl_seconds"]; !ok {
-			return fmt.Errorf("score request evidence[%d].source_ref.ttl_seconds is required", i)
-		} else if err := requireJSONInt(raw, fmt.Sprintf("evidence[%d].source_ref.ttl_seconds", i)); err != nil {
-			return err
-		}
-		if raw, ok := sourceRef["attribution_required"]; !ok {
-			return fmt.Errorf("score request evidence[%d].source_ref.attribution_required is required", i)
-		} else if err := requireJSONBool(raw, fmt.Sprintf("evidence[%d].source_ref.attribution_required", i)); err != nil {
-			return err
-		}
+	}
+	return nil
+}
+
+func validateSourceRefRequiredFields(sourceRefRaw json.RawMessage, path string) error {
+	var sourceRef map[string]json.RawMessage
+	if err := json.Unmarshal(sourceRefRaw, &sourceRef); err != nil {
+		return fmt.Errorf("invalid JSON request %s: %w", path, err)
+	}
+	if raw, ok := sourceRef["ttl_seconds"]; !ok {
+		return fmt.Errorf("score request %s.ttl_seconds is required", path)
+	} else if err := requireJSONInt(raw, path+".ttl_seconds"); err != nil {
+		return err
+	}
+	if raw, ok := sourceRef["attribution_required"]; !ok {
+		return fmt.Errorf("score request %s.attribution_required is required", path)
+	} else if err := requireJSONBool(raw, path+".attribution_required"); err != nil {
+		return err
 	}
 	return nil
 }

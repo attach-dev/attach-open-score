@@ -20,7 +20,8 @@ Current shipped behavior:
 
 Non-goals for this walkthrough:
 
-- No network adapters.
+- No network calls in this walkthrough; it uses local synthetic fixtures even
+  though repository code now includes an isolated OSV adapter.
 - No real package evaluation claims.
 - No hosted Attach platform behavior.
 - No proprietary vendor scores or copied dashboard output.
@@ -51,7 +52,8 @@ valid fixtures/v0/deny-known-critical-vulnerability.json DENY
 valid fixtures/v0/unknown-source-unavailable.json UNKNOWN
 ```
 
-This command is a fixture/schema smoke test. It is not a networked package scanner and does not score new package names from a registry.
+This command is a fixture/schema smoke test. It does not make network calls and
+does not score new package names from a registry.
 
 ## Step 2: print the local score summary
 
