@@ -5,6 +5,18 @@ import (
 	"strings"
 )
 
+func compareVersion(left, right string) (int, bool) {
+	left = strings.TrimSpace(left)
+	right = strings.TrimSpace(right)
+	if left == "" || right == "" {
+		return 0, false
+	}
+	if left == right {
+		return 0, true
+	}
+	return compareNumericVersion(left, right)
+}
+
 func compareNumericVersion(left, right string) (int, bool) {
 	leftParts, ok := numericVersionParts(left)
 	if !ok {
@@ -43,15 +55,14 @@ func numericVersionParts(value string) ([]int64, bool) {
 	if value == "" {
 		return nil, false
 	}
-	value = strings.TrimPrefix(value, "v")
-	value = strings.TrimPrefix(value, "V")
-	if buildIndex := strings.IndexByte(value, '+'); buildIndex >= 0 {
-		value = value[:buildIndex]
+	if value[0] == 'v' || value[0] == 'V' {
+		value = value[1:]
+	}
+	if value == "" {
+		return nil, false
 	}
 
-	rawParts := strings.FieldsFunc(value, func(r rune) bool {
-		return r == '.' || r == '-' || r == '_'
-	})
+	rawParts := strings.Split(value, ".")
 	if len(rawParts) == 0 {
 		return nil, false
 	}
@@ -59,7 +70,7 @@ func numericVersionParts(value string) ([]int64, bool) {
 	parts := make([]int64, 0, len(rawParts))
 	for _, rawPart := range rawParts {
 		if rawPart == "" {
-			continue
+			return nil, false
 		}
 		for _, r := range rawPart {
 			if r < '0' || r > '9' {

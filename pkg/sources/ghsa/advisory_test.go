@@ -108,6 +108,56 @@ func TestAdapterEvidenceReturnsNoKnownForUnaffectedAndNoMatch(t *testing.T) {
 	assertEvidenceAccepted(t, Coordinate{Ecosystem: "pypi", Name: "Django", Version: "4.2.0"}, evidence)
 }
 
+func TestAdapterEvidenceReportsSourceUnavailableForUnsupportedPrereleaseFixedRange(t *testing.T) {
+	adapter := mustNewAdapter(t, Options{Now: fixedClock})
+	evidence, err := adapter.EvidenceFromJSON(Coordinate{Ecosystem: "npm", Name: "left-pad", Version: "1.3.1-0"}, []byte(`{
+		"id": "GHSA-prel-0001-0002",
+		"affected": [{
+			"package": {"ecosystem": "npm", "name": "left-pad"},
+			"ranges": [{"type": "SEMVER", "events": [{"introduced": "0"}, {"fixed": "1.3.1"}]}]
+		}]
+	}`))
+	if err != nil {
+		t.Fatalf("EvidenceFromJSON returned error: %v", err)
+	}
+
+	assertSourceUnavailable(t, evidence, "malformed_record")
+	if evidence[0].Reason.Details["unusable_reason"] != "unsupported_affected_version_data" {
+		t.Fatalf("unusable_reason = %#v", evidence[0].Reason.Details["unusable_reason"])
+	}
+	assertEvidenceAccepted(t, Coordinate{Ecosystem: "npm", Name: "left-pad", Version: "1.3.1-0"}, evidence)
+}
+
+func TestAdapterEvidenceReportsSourceUnavailableForClosingEventBeforeIntroduced(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		event string
+	}{
+		{name: "fixed", event: `{"fixed": "1.3.1"}`},
+		{name: "last_affected", event: `{"last_affected": "1.3.1"}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			adapter := mustNewAdapter(t, Options{Now: fixedClock})
+			evidence, err := adapter.EvidenceFromJSON(Coordinate{Ecosystem: "npm", Name: "left-pad", Version: "1.3.0"}, []byte(`{
+				"id": "GHSA-clos-0001-0002",
+				"affected": [{
+					"package": {"ecosystem": "npm", "name": "left-pad"},
+					"ranges": [{"type": "SEMVER", "events": [`+tc.event+`]}]
+				}]
+			}`))
+			if err != nil {
+				t.Fatalf("EvidenceFromJSON returned error: %v", err)
+			}
+
+			assertSourceUnavailable(t, evidence, "malformed_record")
+			if evidence[0].Reason.Details["unusable_reason"] != "unsupported_affected_version_data" {
+				t.Fatalf("unusable_reason = %#v", evidence[0].Reason.Details["unusable_reason"])
+			}
+			assertEvidenceAccepted(t, Coordinate{Ecosystem: "npm", Name: "left-pad", Version: "1.3.0"}, evidence)
+		})
+	}
+}
+
 func TestAdapterEvidenceMissingSeverityDefaultsModerate(t *testing.T) {
 	adapter := mustNewAdapter(t, Options{Now: fixedClock})
 	evidence, err := adapter.EvidenceFromJSON(Coordinate{Ecosystem: "npm", Name: "left-pad", Version: "1.3.0"}, []byte(`{

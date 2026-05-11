@@ -503,25 +503,31 @@ func rangeAffectsVersion(affectedRange Range, version string) (bool, bool) {
 		return false, false
 	}
 
+	rangeOpen := false
 	active := false
 	for _, event := range affectedRange.Events {
 		switch {
 		case strings.TrimSpace(event.Introduced) != "":
 			introduced := strings.TrimSpace(event.Introduced)
+			rangeOpen = true
 			if introduced == "0" {
 				active = true
 				continue
 			}
-			cmp, ok := compareNumericVersion(version, introduced)
+			cmp, ok := compareVersion(version, introduced)
 			if !ok {
 				return false, false
 			}
 			active = cmp >= 0
 		case strings.TrimSpace(event.Fixed) != "":
+			if !rangeOpen {
+				return false, false
+			}
+			rangeOpen = false
 			if !active {
 				continue
 			}
-			cmp, ok := compareNumericVersion(version, event.Fixed)
+			cmp, ok := compareVersion(version, event.Fixed)
 			if !ok {
 				return false, false
 			}
@@ -530,10 +536,14 @@ func rangeAffectsVersion(affectedRange Range, version string) (bool, bool) {
 			}
 			active = false
 		case strings.TrimSpace(event.LastAffected) != "":
+			if !rangeOpen {
+				return false, false
+			}
+			rangeOpen = false
 			if !active {
 				continue
 			}
-			cmp, ok := compareNumericVersion(version, event.LastAffected)
+			cmp, ok := compareVersion(version, event.LastAffected)
 			if !ok {
 				return false, false
 			}
@@ -608,7 +618,7 @@ func versionConstraintMatches(constraint, version string) (bool, bool) {
 }
 
 func compareConstraint(operator, version, target string) (bool, bool) {
-	cmp, ok := compareNumericVersion(version, target)
+	cmp, ok := compareVersion(version, target)
 	if !ok {
 		return false, false
 	}
