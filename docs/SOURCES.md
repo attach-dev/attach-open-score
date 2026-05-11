@@ -79,6 +79,18 @@ Policy:
 - Preserve GHSA IDs and GitHub advisory URLs in `source_refs`.
 - Attribute GitHub Advisory Database in docs and any hosted/public data display that includes or derives from it.
 - Do not strip attribution when normalizing records.
+- Do not mix, calibrate, or enrich GHSA evidence with proprietary vendor scores or vendor-only vulnerability labels.
+
+Adapter note:
+
+- The v0 GHSA adapter foundation consumes local GitHub Advisory Database/GHSA-shaped JSON records only. It does not call GitHub APIs, read tokens, use GraphQL, or perform live network lookups.
+- Accepted record fields are limited to GHSA/advisory IDs, CVE/alias identifiers, package ecosystem/name/version or range data, severity/CVSS fields, references, published/modified timestamps, and GitHub Advisory Database metadata needed for attribution.
+- The adapter records `source: "github-advisory-database"`, GHSA IDs or local-record coordinates as `source_id`, GitHub advisory/repository/reference URLs, normalization time, a 24-hour default TTL, the upstream GitHub Advisory Database license URL, and attribution text noting expected CC-BY-4.0 obligations.
+- Matching supports exact affected versions plus simple numeric version ranges from local advisory records. Unsupported package/version range data is surfaced as `SOURCE_UNAVAILABLE` instead of being treated as clean evidence.
+- Missing or unrecognized severity on a matching advisory is normalized to the moderate vulnerability reason path to avoid underclassifying a real advisory as informational.
+- Duplicate aliases and references are de-duplicated before `source_ref_ids` are emitted.
+- Unit tests use synthetic GHSA-shaped records and malformed JSON only; no live GitHub API, token, GraphQL, or proprietary vendor fixtures are allowed by default.
+- Public display of GHSA source references is allowed with attribution preserved; redistribution of bundled or normalized advisory snapshots remains `unknown` until current upstream license and redistribution terms are reviewed.
 
 Reference checked during drafting:
 
