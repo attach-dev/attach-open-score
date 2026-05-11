@@ -424,6 +424,40 @@ func TestEvaluateAcceptsZeroSourceTTL(t *testing.T) {
 	assertSchemaValid(t, verdict)
 }
 
+func TestEvaluateDeduplicatesIdenticalSourceRefs(t *testing.T) {
+	first := testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")
+	second := testEvidence(reasons.InstallScriptPresent, "MEDIUM", schema.DecisionEffectAsk, "Synthetic package declares an install script.", "synthetic-source")
+
+	verdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{first, second},
+	})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+	if len(verdict.SourceRefs) != 1 {
+		t.Fatalf("source_refs length = %d, want deduplicated single ref", len(verdict.SourceRefs))
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func TestEvaluateRejectsConflictingDuplicateSourceRefs(t *testing.T) {
+	first := testEvidence(reasons.NoKnownVulnerabilities, "INFO", schema.DecisionEffectNone, "Synthetic check.", "synthetic-source")
+	second := testEvidence(reasons.InstallScriptPresent, "MEDIUM", schema.DecisionEffectAsk, "Synthetic package declares an install script.", "synthetic-source")
+	second.SourceRef.URL = "https://example.invalid/attach-open-score/other-source"
+
+	_, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(Request{
+		Package:  testPackage(),
+		Evidence: []Evidence{first, second},
+	})
+	if err == nil {
+		t.Fatalf("Evaluate returned nil error for conflicting duplicate source_ref")
+	}
+	if !strings.Contains(err.Error(), "conflicting source_ref") {
+		t.Fatalf("error = %v, want conflicting source_ref", err)
+	}
+}
+
 func TestEvaluateRejectsSchemaInvalidEvidence(t *testing.T) {
 	cases := []struct {
 		name    string

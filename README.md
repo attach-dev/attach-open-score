@@ -28,7 +28,7 @@ go run ./cmd/attach-open-score score --input request.json
 - `score --input` evaluates a local, offline v0 request JSON. The request shape is intentionally separate from fixture verdict JSON:
   - top-level `package` is required and uses the package identity fields from `docs/SCORE_SCHEMA.md`;
   - top-level `evidence` is required for CLI scoring and must contain one or more normalized evidence items;
-  - each evidence item contains a deterministic `reason` and, when the reason depends on source data, a matching `source_ref` preserving attribution and terms metadata;
+  - each evidence item contains a deterministic `reason` and, when the reason depends on source data, matching `source_ref` and/or `source_refs` entries preserving attribution and terms metadata;
   - unknown JSON fields, `mode`, and verdict-shaped fixture inputs are rejected;
   - experimental `X_*` reasons with blocking/non-informational effects must carry source-ref provenance;
   - `--policy-profile` accepts `default`, `local-dev-default`, `ci-strict`, or `audit-only`.
@@ -70,4 +70,5 @@ Minimal local request example:
 }
 ```
 
-Status: draft public spec. Source policy, schema, and fixtures come before networked adapters.
+Status: draft public spec with a first OSV adapter. Source policy, schema,
+fixtures, and adapter behavior must stay reviewed together.

@@ -43,6 +43,17 @@ Policy:
 - Do not imply OSV endorsement.
 - Preserve upstream advisory IDs and URLs in `source_refs`.
 
+Adapter note:
+
+- The v0 OSV adapter uses the official `POST /v1/query` API for single package coordinates only: ecosystem, package name, and version.
+- Accepted response fields are limited to vulnerability IDs, aliases, summary text, severity/CVSS values, references, published/modified timestamps, and `database_specific` severity/malicious markers where present.
+- The adapter rechecks OSV `affected.package` before emitting vulnerability evidence. For records returned by version-scoped `POST /v1/query`, exact `affected.versions` matches and matching-package `affected.ranges` are treated as vulnerability evidence; affected entries with neither versions nor ranges are treated as unusable source data.
+- It records `source: "osv.dev"`, OSV vulnerability IDs or query coordinates as `source_id`, OSV vulnerability/query/reference URLs, retrieval time, a 24-hour default TTL, and OSV-specific attribution text for query responses, vulnerability records, aliases, and upstream references.
+- The adapter does not require API credentials, does not send user/account/project context, and unit tests use injected HTTP clients instead of live network calls.
+- The adapter sets no custom retry loop today; callers should respect OSV API availability, use bounded timeouts, and add rate-limit/backoff policy before bulk hosted use.
+- Normalized OSV fixtures should use synthetic responses unless a real record is explicitly needed with provenance and current terms review.
+- Public display of source references is allowed for IDs/URLs/attribution; redistribution of bulk normalized OSV-derived data remains `unknown` until large-scale mirroring/redistribution terms are reviewed.
+
 Reference checked during drafting:
 
 - `https://google.github.io/osv.dev/`

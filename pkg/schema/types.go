@@ -71,8 +71,9 @@ type Request struct {
 }
 
 type Evidence struct {
-	Reason    Reason     `json:"reason"`
-	SourceRef *SourceRef `json:"source_ref,omitempty"`
+	Reason     Reason      `json:"reason"`
+	SourceRef  *SourceRef  `json:"source_ref,omitempty"`
+	SourceRefs []SourceRef `json:"source_refs,omitempty"`
 }
 
 type Verdict struct {
