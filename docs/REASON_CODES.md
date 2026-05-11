@@ -33,6 +33,8 @@ Reason codes explain why Attach Open Score returned a decision. Codes are stable
 | `KNOWN_VULNERABILITY_MODERATE` | MEDIUM | ASK | Evaluated version is affected by moderate known vulnerability. |
 | `NO_KNOWN_VULNERABILITIES` | INFO | NONE | Checked allowed vulnerability sources found no matching advisory. |
 
+GHSA/GitHub Advisory Database adapter note: local GHSA-shaped advisory matches use the existing `KNOWN_VULNERABILITY_*` codes and must include GitHub Advisory Database `source_refs` with attribution and terms metadata. Local GHSA records that cannot be parsed or whose affected version data is unsupported use `SOURCE_UNAVAILABLE`; missing or unrecognized severity on a matching advisory defaults to `KNOWN_VULNERABILITY_MODERATE` rather than informational.
+
 ### Package/version freshness
 
 | Code | Severity | Default effect | Meaning |
