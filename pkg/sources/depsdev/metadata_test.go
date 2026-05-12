@@ -41,8 +41,8 @@ func TestAdapterEvidenceFromJSONNormalizesPackageVersionMetadata(t *testing.T) {
 	if got.Reason.Code != reasons.RepositoryMappingUncertain {
 		t.Fatalf("reason code = %s, want %s", got.Reason.Code, reasons.RepositoryMappingUncertain)
 	}
-	if got.Reason.Severity != "LOW" || got.Reason.DecisionEffect != schema.DecisionEffectNone {
-		t.Fatalf("reason severity/effect = %s/%s, want LOW/NONE", got.Reason.Severity, got.Reason.DecisionEffect)
+	if got.Reason.Severity != "MEDIUM" || got.Reason.DecisionEffect != schema.DecisionEffectUnknown {
+		t.Fatalf("reason severity/effect = %s/%s, want MEDIUM/UNKNOWN", got.Reason.Severity, got.Reason.DecisionEffect)
 	}
 	if got.SourceRef == nil {
 		t.Fatalf("source_ref is nil")
@@ -73,7 +73,7 @@ func TestAdapterEvidenceFromJSONNormalizesPackageVersionMetadata(t *testing.T) {
 		t.Fatalf("package_versions = %#v, want two normalized versions", got.Reason.Details["package_versions"])
 	}
 
-	assertEvidenceAccepted(t, "npm", "left-pad", "1.3.0", evidence)
+	assertEvidenceScoresAs(t, "npm", "left-pad", "1.3.0", evidence, schema.DecisionAsk)
 }
 
 func TestAdapterEvidenceEscapesScopedAndSlashContainingCoordinates(t *testing.T) {
@@ -91,7 +91,7 @@ func TestAdapterEvidenceEscapesScopedAndSlashContainingCoordinates(t *testing.T)
 	if got := npmEvidence[0].Reason.Details["purl"]; got != "pkg:npm/%40scope/pkg@1.0.0-beta.1" {
 		t.Fatalf("scoped npm purl = %#v", got)
 	}
-	assertEvidenceAccepted(t, "npm", "@scope/pkg", "1.0.0-beta.1", npmEvidence)
+	assertEvidenceScoresAs(t, "npm", "@scope/pkg", "1.0.0-beta.1", npmEvidence, schema.DecisionAsk)
 
 	goEvidence, err := adapter.Evidence(Metadata{
 		Version: Version{VersionKey: VersionKey{System: "GO", Name: "google.golang.org/grpc", Version: "v1.60.0"}},
@@ -105,7 +105,7 @@ func TestAdapterEvidenceEscapesScopedAndSlashContainingCoordinates(t *testing.T)
 	if got := goEvidence[0].Reason.Details["purl"]; got != "pkg:golang/google.golang.org/grpc@v1.60.0" {
 		t.Fatalf("go purl = %#v", got)
 	}
-	assertEvidenceAccepted(t, "go", "google.golang.org/grpc", "v1.60.0", goEvidence)
+	assertEvidenceScoresAs(t, "go", "google.golang.org/grpc", "v1.60.0", goEvidence, schema.DecisionAsk)
 }
 
 func TestAdapterEvidenceIncludesDependenciesLicensesAndRepositoryLinks(t *testing.T) {
@@ -135,8 +135,8 @@ func TestAdapterEvidenceIncludesDependenciesLicensesAndRepositoryLinks(t *testin
 		t.Fatalf("Evidence returned error: %v", err)
 	}
 	got := evidence[0]
-	if got.Reason.Code != reasons.RepositoryMappingUncertain || got.Reason.DecisionEffect != schema.DecisionEffectNone {
-		t.Fatalf("reason = %#v, want informational metadata evidence", got.Reason)
+	if got.Reason.Code != reasons.RepositoryMappingUncertain || got.Reason.DecisionEffect != schema.DecisionEffectUnknown {
+		t.Fatalf("reason = %#v, want non-authoritative metadata evidence", got.Reason)
 	}
 
 	licenses, ok := got.Reason.Details["licenses"].([]string)
@@ -161,10 +161,10 @@ func TestAdapterEvidenceIncludesDependenciesLicensesAndRepositoryLinks(t *testin
 		t.Fatalf("source_ref_ids = %#v, want version/package/dependencies/repo refs", got.Reason.SourceRefIDs)
 	}
 	assertNoDuplicateSourceRefs(t, evidence)
-	assertEvidenceAccepted(t, "pypi", "demo-pkg", "2.0.0", evidence)
+	assertEvidenceScoresAs(t, "pypi", "demo-pkg", "2.0.0", evidence, schema.DecisionAsk)
 }
 
-func TestAdapterEvidenceMissingAndAmbiguousOptionalFieldsAreInformational(t *testing.T) {
+func TestAdapterEvidenceMissingAndAmbiguousOptionalFieldsAreNonAuthoritative(t *testing.T) {
 	adapter := mustNewAdapter(t, Options{Now: fixedClock})
 
 	t.Run("missing optional fields", func(t *testing.T) {
@@ -175,13 +175,13 @@ func TestAdapterEvidenceMissingAndAmbiguousOptionalFieldsAreInformational(t *tes
 			t.Fatalf("Evidence returned error: %v", err)
 		}
 		got := evidence[0]
-		if got.Reason.Code != reasons.RepositoryMappingUncertain || got.Reason.Severity != "LOW" || got.Reason.DecisionEffect != schema.DecisionEffectNone {
-			t.Fatalf("reason = %#v, want low informational evidence", got.Reason)
+		if got.Reason.Code != reasons.RepositoryMappingUncertain || got.Reason.Severity != "MEDIUM" || got.Reason.DecisionEffect != schema.DecisionEffectUnknown {
+			t.Fatalf("reason = %#v, want non-authoritative metadata evidence", got.Reason)
 		}
 		if got.Reason.Details["repository_mapping_status"] != "not_reported" || got.Reason.Details["license_metadata_status"] != "not_reported" || got.Reason.Details["dependency_metadata_status"] != "not_reported" {
 			t.Fatalf("optional metadata status details = %#v", got.Reason.Details)
 		}
-		assertEvidenceAccepted(t, "npm", "left-pad", "1.3.0", evidence)
+		assertEvidenceScoresAs(t, "npm", "left-pad", "1.3.0", evidence, schema.DecisionAsk)
 	})
 
 	t.Run("ambiguous repository links", func(t *testing.T) {
@@ -198,13 +198,13 @@ func TestAdapterEvidenceMissingAndAmbiguousOptionalFieldsAreInformational(t *tes
 			t.Fatalf("Evidence returned error: %v", err)
 		}
 		got := evidence[0]
-		if got.Reason.Code != reasons.RepositoryMappingUncertain || got.Reason.DecisionEffect != schema.DecisionEffectNone {
-			t.Fatalf("reason = %#v, want informational evidence for ambiguous optional data", got.Reason)
+		if got.Reason.Code != reasons.RepositoryMappingUncertain || got.Reason.DecisionEffect != schema.DecisionEffectUnknown {
+			t.Fatalf("reason = %#v, want non-authoritative evidence for ambiguous optional data", got.Reason)
 		}
 		if got.Reason.Details["repository_mapping_status"] != "ambiguous" {
 			t.Fatalf("repository_mapping_status = %#v, want ambiguous", got.Reason.Details["repository_mapping_status"])
 		}
-		assertEvidenceAccepted(t, "npm", "left-pad", "1.3.0", evidence)
+		assertEvidenceScoresAs(t, "npm", "left-pad", "1.3.0", evidence, schema.DecisionAsk)
 	})
 }
 
@@ -222,7 +222,25 @@ func TestAdapterEvidenceReportsSourceUnavailableForMissingRequiredLocalData(t *t
 	if !ok || len(missing) != 1 || missing[0] != "version" {
 		t.Fatalf("missing_fields = %#v, want version", evidence[0].Reason.Details["missing_fields"])
 	}
-	assertEvidenceAccepted(t, "npm", "left-pad", "1.3.0", evidence)
+	assertEvidenceScoresAs(t, "npm", "left-pad", "1.3.0", evidence, schema.DecisionAsk)
+}
+
+func TestAdapterEvidenceReportsSourceUnavailableForConflictingRequiredLocalData(t *testing.T) {
+	adapter := mustNewAdapter(t, Options{Now: fixedClock})
+	evidence, err := adapter.Evidence(Metadata{
+		Package: Package{PackageKey: PackageKey{System: "NPM", Name: "left-pad"}},
+		Version: Version{VersionKey: VersionKey{System: "NPM", Name: "right-pad", Version: "1.3.0"}},
+	})
+	if err != nil {
+		t.Fatalf("Evidence returned error: %v", err)
+	}
+
+	assertSourceUnavailable(t, evidence, "conflicting_required_data")
+	conflicts, ok := evidence[0].Reason.Details["conflicting_fields"].([]string)
+	if !ok || len(conflicts) != 1 || conflicts[0] != "version.versionKey.name" {
+		t.Fatalf("conflicting_fields = %#v, want version.versionKey.name", evidence[0].Reason.Details["conflicting_fields"])
+	}
+	assertEvidenceScoresAs(t, "npm", "left-pad", "1.3.0", evidence, schema.DecisionAsk)
 }
 
 func TestAdapterEvidenceDeduplicatesSourceRefsAndSourceRefIDs(t *testing.T) {
@@ -254,7 +272,7 @@ func TestAdapterEvidenceDeduplicatesSourceRefsAndSourceRefIDs(t *testing.T) {
 		t.Fatalf("source_ref_ids = %#v, want deduped version/package/repository ids", got.Reason.SourceRefIDs)
 	}
 	assertNoDuplicateSourceRefs(t, evidence)
-	assertEvidenceAccepted(t, "npm", "left-pad", "1.3.0", evidence)
+	assertEvidenceScoresAs(t, "npm", "left-pad", "1.3.0", evidence, schema.DecisionAsk)
 }
 
 func TestAdapterEvidenceFromJSONReportsParseFailure(t *testing.T) {
@@ -271,7 +289,7 @@ func TestAdapterEvidenceFromJSONReportsParseFailure(t *testing.T) {
 	if evidence[0].SourceRef == nil || !strings.HasPrefix(evidence[0].SourceRef.ID, "depsdev-json-") {
 		t.Fatalf("source_ref = %#v, want local JSON source ref", evidence[0].SourceRef)
 	}
-	assertEvidenceAccepted(t, "npm", "left-pad", "1.3.0", evidence)
+	assertEvidenceScoresAs(t, "npm", "left-pad", "1.3.0", evidence, schema.DecisionAsk)
 }
 
 func TestAdapterEvidenceSourceRefAttributionFields(t *testing.T) {
@@ -362,14 +380,14 @@ func assertNoDuplicateSourceRefs(t *testing.T, evidence []schema.Evidence) {
 	}
 }
 
-func assertEvidenceAccepted(t *testing.T, ecosystem, name, version string, evidence []schema.Evidence) {
+func assertEvidenceScoresAs(t *testing.T, ecosystem, name, version string, evidence []schema.Evidence, wantDecision schema.Decision) {
 	t.Helper()
 
 	engine, err := score.NewEngine(score.Options{Now: fixedClock})
 	if err != nil {
 		t.Fatalf("NewEngine returned error: %v", err)
 	}
-	_, err = engine.Evaluate(schema.Request{
+	verdict, err := engine.Evaluate(schema.Request{
 		Package: schema.PackageIdentity{
 			Ecosystem: ecosystem,
 			Name:      name,
@@ -381,6 +399,9 @@ func assertEvidenceAccepted(t *testing.T, ecosystem, name, version string, evide
 	})
 	if err != nil {
 		t.Fatalf("scorer rejected evidence: %v", err)
+	}
+	if verdict.Decision != wantDecision {
+		t.Fatalf("scorer decision = %s, want %s", verdict.Decision, wantDecision)
 	}
 }
 

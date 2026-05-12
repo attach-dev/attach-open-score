@@ -274,10 +274,10 @@ func defaultDecisionEffect(code string) (schema.DecisionEffect, bool) {
 		reasons.UnsupportedEcosystem,
 		reasons.SourceUnavailable,
 		reasons.SourceTermsBlocked,
-		reasons.InsufficientData:
+		reasons.InsufficientData,
+		reasons.RepositoryMappingUncertain:
 		return schema.DecisionEffectUnknown, true
 	case reasons.NoKnownVulnerabilities,
-		reasons.RepositoryMappingUncertain,
 		reasons.MaintainerActivityLow,
 		reasons.ReleaseRecencyFresh,
 		reasons.ReleaseRecencyNearStale:

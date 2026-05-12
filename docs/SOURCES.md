@@ -120,7 +120,7 @@ Adapter note:
 
 - The v0 deps.dev adapter consumes local deps.dev-shaped package/version metadata only. It does not call the deps.dev API, perform HTTP requests, read credentials, or use live network lookups.
 - Accepted local metadata is limited to package/version identity, package versions, dependency metadata, license strings, repository/project links, and deps.dev API identifiers needed for source references.
-- The adapter emits informational `REPOSITORY_MAPPING_UNCERTAIN` evidence with `LOW` severity and `NONE` decision effect for normalized package, version, repository, dependency, and license metadata. It must not create `ALLOW` or `DENY` evidence.
+- The adapter emits non-authoritative `REPOSITORY_MAPPING_UNCERTAIN` evidence with `MEDIUM` severity and `UNKNOWN` decision effect for normalized package, version, repository, dependency, and license metadata. Deps.dev-only metadata must stay ASK/UNKNOWN-quality and must not create `ALLOW` or `DENY` evidence.
 - Malformed JSON or missing required package identity/version fields are surfaced as `SOURCE_UNAVAILABLE`; missing or ambiguous optional repository, dependency, or license fields remain non-authoritative metadata details.
 - It records `source: "deps.dev"`, deps.dev package/version/dependency API identifiers or repository links as `source_id`, retrieval time, a 24-hour default TTL, `https://docs.deps.dev/api/v3/` as the terms URL, and attribution text mentioning deps.dev / Open Source Insights / Google with expected CC-BY-4.0 obligations.
 - Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local structs/JSON only and do not perform live deps.dev lookups.

@@ -254,9 +254,9 @@ func (a Adapter) evidence(metadata Metadata, fallbackSourceRef schema.SourceRef)
 	return []schema.Evidence{{
 		Reason: schema.Reason{
 			Code:           reasons.RepositoryMappingUncertain,
-			Severity:       "LOW",
-			DecisionEffect: schema.DecisionEffectNone,
-			Message:        fmt.Sprintf("deps.dev metadata for %s package %s@%s was normalized as informational package and repository context only.", normalized.Ecosystem, normalized.Name, normalized.Version),
+			Severity:       "MEDIUM",
+			DecisionEffect: schema.DecisionEffectUnknown,
+			Message:        fmt.Sprintf("deps.dev metadata for %s package %s@%s was normalized as non-authoritative package and repository context only.", normalized.Ecosystem, normalized.Name, normalized.Version),
 			SourceRefIDs:   sourceRefIDs,
 			Details:        details,
 		},
