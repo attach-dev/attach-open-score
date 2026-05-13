@@ -207,6 +207,25 @@ Adapter note:
 - Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON only and do not perform live npm registry calls.
 - Public display of normalized npm package/version facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw registry documents, hosted cache dumps, security/audit data, package tarballs, or package source contents remains blocked or `unknown` until separately reviewed.
 
+#### PyPI public registry
+
+Known posture:
+
+- Current Attach planning context permits fixture-first adapter work for documented PyPI JSON and Simple/Index metadata.
+- Use public PyPI JSON or Simple/Index metadata shapes rather than account pages, user profiles, bulk popularity datasets, or website crawling.
+- Do not expose personal contact fields from package metadata in evidence, source references, errors, fixtures, or docs examples.
+- Do not expose raw PyPI API documents as an Attach upstream-data API.
+
+Adapter note:
+
+- The v0 PyPI registry adapter foundation consumes local PyPI JSON-shaped and Simple/Index-shaped project metadata only. It does not perform live PyPI calls, import HTTP clients, crawl websites, inspect accounts, use popularity metrics, fetch package files, or redistribute raw API responses.
+- Accepted local metadata is limited to project/version identity, release-file names, package types, upload timestamps, hashes/digests, `requires_python`, yanked markers/reasons, license strings, sanitized project URLs/repository links, project serial or represented ETag metadata, and source identifiers needed for source references.
+- The adapter records `source: "pypi-registry"`, PyPI project/version or Simple/Index identifiers and URLs as `source_id`/`url`, normalization time, a 24-hour default TTL, `https://policies.python.org/pypi.org/Terms-of-Service/` as the terms URL, and attribution text for PyPI public registry metadata.
+- PyPI registry metadata is non-authoritative package context. Normal package/version/release-file metadata uses `REPOSITORY_MAPPING_UNCERTAIN` with `UNKNOWN` effect and must not produce a default `ALLOW`; yanked release-file metadata uses the existing `PACKAGE_UNPUBLISHED_OR_YANKED` ASK path.
+- Project-level metadata and Simple/Index pages are mutable. Fixtures may represent `last_serial`, `_last-serial`, or ETag presence, and normalized details should state that short-TTL serial or ETag-aware refresh is recommended. Cache normalized package/version/release-file facts, not raw registry documents for redistribution.
+- Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON only and do not perform live PyPI lookups.
+- Public display of normalized PyPI package/version/release-file facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw registry documents, cache dumps, popularity metrics, package files, package source contents, or account/user metadata remains blocked or `unknown` until separately reviewed.
+
 References checked during drafting:
 
 - npm Terms: `https://docs.npmjs.com/policies/terms/`
