@@ -67,7 +67,7 @@ GHSA/GitHub Advisory Database adapter note: local GHSA-shaped advisory matches u
 | Code | Severity | Default effect | Meaning |
 |---|---|---|---|
 | `LOW_REPOSITORY_HEALTH` | MEDIUM | ASK | Repository health signals are weak where package-to-repo mapping is reliable. |
-| `REPOSITORY_MAPPING_UNCERTAIN` | LOW | NONE | Package-to-repository mapping is uncertain, so repo signals were down-weighted. |
+| `REPOSITORY_MAPPING_UNCERTAIN` | MEDIUM | UNKNOWN | Package-to-repository mapping is uncertain, so repository/project metadata is non-authoritative. |
 | `MAINTAINER_ACTIVITY_LOW` | LOW | NONE | Maintainer or release activity appears low; informational in v0. |
 | `RELEASE_RECENCY_STALE` | MEDIUM | ASK | Last observed package release is older than the configured stale-release threshold. |
 | `RELEASE_RECENCY_FRESH` | INFO | NONE | Last observed package release is within the configured fresh-release window. |
