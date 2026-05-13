@@ -1,0 +1,357 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "attach-open-score-go/dev",
+  "package": {
+    "ecosystem": "npm",
+    "name": "synthetic-compose",
+    "version": "1.0.0",
+    "purl": "pkg:npm/synthetic-compose@1.0.0",
+    "resolved": true,
+    "repository_url": "https://example.invalid/attach-open-score/synthetic-compose"
+  },
+  "decision": "DENY",
+  "score": 95,
+  "confidence": "HIGH",
+  "reasons": [
+    {
+      "code": "NO_KNOWN_VULNERABILITIES",
+      "severity": "INFO",
+      "decision_effect": "NONE",
+      "message": "OSV.dev reported no known vulnerabilities for npm package synthetic-compose@1.0.0.",
+      "source_ref_ids": [
+        "osv-query-35363f8b3609f3a4"
+      ],
+      "details": {
+        "ecosystem": "npm",
+        "osv_ecosystem": "npm",
+        "package_name": "synthetic-compose",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "code": "KNOWN_VULNERABILITY_CRITICAL",
+      "severity": "CRITICAL",
+      "decision_effect": "DENY",
+      "message": "GitHub Advisory Database advisory GHSA-COMP-CRIT-0001 affects npm package synthetic-compose@1.0.0 with critical severity.",
+      "source_ref_ids": [
+        "ghsa-ghsa-comp-crit-0001",
+        "ghsa-upstream-a63113a0280e12e0"
+      ],
+      "details": {
+        "advisory_id": "GHSA-COMP-CRIT-0001",
+        "ecosystem": "npm",
+        "ecosystem_key": "npm",
+        "explicit_severity": true,
+        "matched_affected_entries": 1,
+        "package_name": "synthetic-compose",
+        "references": [
+          {
+            "type": "ADVISORY",
+            "url": "https://github.com/advisories/GHSA-comp-crit-0001"
+          }
+        ],
+        "severity": [
+          {
+            "type": "CVSS_V3",
+            "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          }
+        ],
+        "summary": "Synthetic GHSA composition fixture advisory.",
+        "upstream_source_refs": [
+          {
+            "id": "ghsa-upstream-a63113a0280e12e0",
+            "source_id": "ADVISORY:https://github.com/advisories/GHSA-comp-crit-0001",
+            "url": "https://github.com/advisories/GHSA-comp-crit-0001"
+          }
+        ],
+        "version": "1.0.0"
+      }
+    },
+    {
+      "code": "REPOSITORY_MAPPING_UNCERTAIN",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "deps.dev metadata for npm package synthetic-compose@1.0.0 was normalized as non-authoritative package and repository context only.",
+      "source_ref_ids": [
+        "depsdev-version-npm-synthetic-compose-1.0.0",
+        "depsdev-package-npm-synthetic-compose",
+        "depsdev-dependencies-npm-synthetic-compose-1.0.0-dependencies",
+        "depsdev-link-e154bad6e62c6ad3"
+      ],
+      "details": {
+        "dependencies": [
+          {
+            "name": "left-pad",
+            "relation": "DIRECT",
+            "requirement": "^1.3.0",
+            "system": "NPM"
+          }
+        ],
+        "dependency_count": 1,
+        "dependency_metadata_status": "reported_by_deps_dev",
+        "depsdev_system": "NPM",
+        "ecosystem": "npm",
+        "license_metadata_status": "reported_by_deps_dev",
+        "licenses": [
+          "Apache-2.0"
+        ],
+        "package_name": "synthetic-compose",
+        "published_at": "2026-05-01T00:00:00Z",
+        "purl": "pkg:npm/synthetic-compose@1.0.0",
+        "repository_links": [
+          {
+            "label": "SOURCE_REPO",
+            "url": "https://example.invalid/attach-open-score/synthetic-compose"
+          }
+        ],
+        "repository_mapping_status": "reported_by_deps_dev",
+        "source": "deps.dev",
+        "source_refs": [
+          {
+            "id": "depsdev-version-npm-synthetic-compose-1.0.0",
+            "source_id": "NPM:synthetic-compose@1.0.0",
+            "url": "https://api.deps.dev/v3/systems/NPM/packages/synthetic-compose/versions/1.0.0"
+          },
+          {
+            "id": "depsdev-package-npm-synthetic-compose",
+            "source_id": "NPM:synthetic-compose",
+            "url": "https://api.deps.dev/v3/systems/NPM/packages/synthetic-compose"
+          },
+          {
+            "id": "depsdev-dependencies-npm-synthetic-compose-1.0.0-dependencies",
+            "source_id": "NPM:synthetic-compose@1.0.0:dependencies",
+            "url": "https://api.deps.dev/v3/systems/NPM/packages/synthetic-compose/versions/1.0.0:dependencies"
+          },
+          {
+            "id": "depsdev-link-e154bad6e62c6ad3",
+            "source_id": "repository:https://example.invalid/attach-open-score/synthetic-compose",
+            "url": "https://example.invalid/attach-open-score/synthetic-compose"
+          }
+        ],
+        "version": "1.0.0"
+      }
+    },
+    {
+      "code": "REPOSITORY_MAPPING_UNCERTAIN",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "OpenSSF Scorecard local report for example.invalid/attach-open-score/synthetic-compose was normalized as repository-health evidence only; v0 does not allow packages based on Scorecard data alone.",
+      "source_ref_ids": [
+        "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-2026-05-12t10-00-00z",
+        "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-dangerous-workflow",
+        "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-maintained",
+        "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-token-permissions"
+      ],
+      "details": {
+        "evidence_posture": "repository_health_only_not_allow_or_deny",
+        "health_status": "observed_no_low_selected_checks",
+        "low_check_score_threshold": 5,
+        "low_overall_score_threshold": 5,
+        "repository_identity": "example.invalid/attach-open-score/synthetic-compose",
+        "repository_url": "https://example.invalid/attach-open-score/synthetic-compose",
+        "scorecard_commit": "synthetic-scorecard-commit",
+        "scorecard_date": "2026-05-12T10:00:00Z",
+        "scorecard_score": 8.9,
+        "scorecard_version": "v5.0.0",
+        "selected_checks": [
+          {
+            "name": "Dangerous-Workflow",
+            "reason": "synthetic local report shows no dangerous workflow patterns",
+            "score": 10
+          },
+          {
+            "name": "Maintained",
+            "reason": "synthetic local report shows recent maintenance",
+            "score": 10
+          },
+          {
+            "name": "Token-Permissions",
+            "reason": "synthetic local report shows scoped token permissions",
+            "score": 8
+          }
+        ],
+        "source": "openssf-scorecard",
+        "source_refs": [
+          {
+            "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-2026-05-12t10-00-00z",
+            "source": "openssf-scorecard",
+            "source_id": "example.invalid/attach-open-score/synthetic-compose@2026-05-12T10:00:00Z",
+            "url": "https://example.invalid/attach-open-score/synthetic-compose"
+          },
+          {
+            "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-dangerous-workflow",
+            "source": "openssf-scorecard",
+            "source_id": "example.invalid/attach-open-score/synthetic-compose#Dangerous-Workflow",
+            "url": "https://github.com/ossf/scorecard/blob/main/docs/checks.md"
+          },
+          {
+            "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-maintained",
+            "source": "openssf-scorecard",
+            "source_id": "example.invalid/attach-open-score/synthetic-compose#Maintained",
+            "url": "https://github.com/ossf/scorecard/blob/main/docs/checks.md"
+          },
+          {
+            "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-token-permissions",
+            "source": "openssf-scorecard",
+            "source_id": "example.invalid/attach-open-score/synthetic-compose#Token-Permissions",
+            "url": "https://github.com/ossf/scorecard/blob/main/docs/checks.md"
+          }
+        ]
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "osv-query-35363f8b3609f3a4",
+      "source": "osv.dev",
+      "source_id": "npm:synthetic-compose@1.0.0",
+      "url": "https://example.invalid/attach-open-score/osv/v1/query",
+      "retrieved_at": "2026-05-13T14:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://google.github.io/osv.dev/",
+      "attribution": "Source: OSV.dev query response",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "ghsa-ghsa-comp-crit-0001",
+      "source": "github-advisory-database",
+      "source_id": "GHSA-COMP-CRIT-0001",
+      "url": "https://github.com/advisories/GHSA-comp-crit-0001",
+      "retrieved_at": "2026-05-13T14:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://github.com/github/advisory-database/blob/main/LICENSE.md",
+      "attribution": "Source: GitHub Advisory Database advisory record; CC-BY-4.0 attribution required and upstream advisory IDs/URLs are preserved",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "ghsa-upstream-a63113a0280e12e0",
+      "source": "github-advisory-database",
+      "source_id": "ADVISORY:https://github.com/advisories/GHSA-comp-crit-0001",
+      "url": "https://github.com/advisories/GHSA-comp-crit-0001",
+      "retrieved_at": "2026-05-13T14:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://github.com/github/advisory-database/blob/main/LICENSE.md",
+      "attribution": "Upstream advisory URL preserved from GitHub Advisory Database; verify upstream source terms before redistribution",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "depsdev-version-npm-synthetic-compose-1.0.0",
+      "source": "deps.dev",
+      "source_id": "NPM:synthetic-compose@1.0.0",
+      "url": "https://api.deps.dev/v3/systems/NPM/packages/synthetic-compose/versions/1.0.0",
+      "retrieved_at": "2026-05-13T14:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.deps.dev/api/v3/",
+      "attribution": "Source: deps.dev / Open Source Insights metadata from Google; expected CC-BY-4.0 attribution applies when data is displayed or redistributed",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "depsdev-package-npm-synthetic-compose",
+      "source": "deps.dev",
+      "source_id": "NPM:synthetic-compose",
+      "url": "https://api.deps.dev/v3/systems/NPM/packages/synthetic-compose",
+      "retrieved_at": "2026-05-13T14:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.deps.dev/api/v3/",
+      "attribution": "Source: deps.dev / Open Source Insights metadata from Google; expected CC-BY-4.0 attribution applies when data is displayed or redistributed",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "depsdev-dependencies-npm-synthetic-compose-1.0.0-dependencies",
+      "source": "deps.dev",
+      "source_id": "NPM:synthetic-compose@1.0.0:dependencies",
+      "url": "https://api.deps.dev/v3/systems/NPM/packages/synthetic-compose/versions/1.0.0:dependencies",
+      "retrieved_at": "2026-05-13T14:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.deps.dev/api/v3/",
+      "attribution": "Source: deps.dev / Open Source Insights metadata from Google; expected CC-BY-4.0 attribution applies when data is displayed or redistributed",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "depsdev-link-e154bad6e62c6ad3",
+      "source": "deps.dev",
+      "source_id": "repository:https://example.invalid/attach-open-score/synthetic-compose",
+      "url": "https://example.invalid/attach-open-score/synthetic-compose",
+      "retrieved_at": "2026-05-13T14:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.deps.dev/api/v3/",
+      "attribution": "Source: deps.dev / Open Source Insights metadata from Google; expected CC-BY-4.0 attribution applies when data is displayed or redistributed",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-2026-05-12t10-00-00z",
+      "source": "openssf-scorecard",
+      "source_id": "example.invalid/attach-open-score/synthetic-compose@2026-05-12T10:00:00Z",
+      "url": "https://example.invalid/attach-open-score/synthetic-compose",
+      "retrieved_at": "2026-05-12T10:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://github.com/ossf/scorecard/blob/main/LICENSE",
+      "attribution": "Source: OpenSSF Scorecard local/synthetic report. OpenSSF Scorecard is an OpenSSF project; review Scorecard output-data and platform API terms before hosted or bulk redistribution.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-dangerous-workflow",
+      "source": "openssf-scorecard",
+      "source_id": "example.invalid/attach-open-score/synthetic-compose#Dangerous-Workflow",
+      "url": "https://github.com/ossf/scorecard/blob/main/docs/checks.md",
+      "retrieved_at": "2026-05-12T10:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://github.com/ossf/scorecard/blob/main/LICENSE",
+      "attribution": "Source: OpenSSF Scorecard check result from local/synthetic report. Preserve check name, score, reason, and retrieval metadata when displaying this evidence.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-maintained",
+      "source": "openssf-scorecard",
+      "source_id": "example.invalid/attach-open-score/synthetic-compose#Maintained",
+      "url": "https://github.com/ossf/scorecard/blob/main/docs/checks.md",
+      "retrieved_at": "2026-05-12T10:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://github.com/ossf/scorecard/blob/main/LICENSE",
+      "attribution": "Source: OpenSSF Scorecard check result from local/synthetic report. Preserve check name, score, reason, and retrieval metadata when displaying this evidence.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "openssf-scorecard-example.invalid-attach-open-score-synthetic-compose-token-permissions",
+      "source": "openssf-scorecard",
+      "source_id": "example.invalid/attach-open-score/synthetic-compose#Token-Permissions",
+      "url": "https://github.com/ossf/scorecard/blob/main/docs/checks.md",
+      "retrieved_at": "2026-05-12T10:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://github.com/ossf/scorecard/blob/main/LICENSE",
+      "attribution": "Source: OpenSSF Scorecard check result from local/synthetic report. Preserve check name, score, reason, and retrieval metadata when displaying this evidence.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-13T14:00:00Z",
+  "ttl_seconds": 86400,
+  "limitations": [
+    "Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
+    "Synthetic composition fixture; not a real package evaluation.",
+    "Synthetic local adapter inputs only; no OSV.dev, GitHub, deps.dev, OpenSSF Scorecard, repository clone, or API lookup was performed.",
+    "Source refs preserve adapter attribution posture for allowed source families; redistribution remains unknown for upstream-derived source families."
+  ]
+}
