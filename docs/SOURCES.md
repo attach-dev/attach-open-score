@@ -259,6 +259,23 @@ Suggested default TTL classes, subject to source terms:
 - Scorecard/repository health: short TTL because repo posture changes.
 - Package artifact inspection: cache by immutable digest where terms permit.
 
+## Synthetic local composition fixtures
+
+Offline composition fixtures may combine evidence emitted by existing v0 source
+adapters when every adapter input is synthetic or locally injected test data.
+These fixtures must not call live APIs, clone repositories, execute OpenSSF
+Scorecard, query GitHub, or include real package contents unless a separate
+source/terms review explicitly permits that fixture.
+
+Composition fixtures do not introduce a new source family and must preserve the
+source refs, attribution text, terms URLs, TTLs, and redistribution/public-display
+posture emitted by each adapter. Healthy deps.dev or Scorecard-style repository
+metadata remains non-authoritative `UNKNOWN`/`ASK`-quality evidence and must not
+create a default `ALLOW` without independent deterministic allow-supporting
+evidence. Synthetic local inputs should use reserved example URLs or clearly
+synthetic identifiers and state in fixture limitations that no live source lookup
+or real package evaluation occurred.
+
 ## Attribution posture
 
 Public docs and hosted output should include attribution for source families used. Minimum project-level attribution language:
