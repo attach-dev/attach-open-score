@@ -147,6 +147,15 @@ Policy:
 - Preserve Scorecard result timestamps, repo URL, check names, and score/details as `source_refs`.
 - Avoid over-weighting repository health when package identity/repository mapping is uncertain.
 
+Adapter note:
+
+- The v0 OpenSSF Scorecard adapter foundation consumes local or synthetic Scorecard-shaped JSON only. It does not call GitHub APIs, clone repositories, execute the Scorecard binary, read credentials, or perform live network lookups.
+- Accepted local fields are limited to repository identity/commit, Scorecard run timestamp, Scorecard version/commit, aggregate score, selected repository-health check names, check scores, reasons, details, and documentation URLs.
+- The adapter records `source: "openssf-scorecard"`, repository/check identifiers as `source_id`, repository or Scorecard documentation URLs where available, Scorecard result/retrieval time, a 24-hour default TTL, the upstream Scorecard license URL, and attribution text for OpenSSF Scorecard local/synthetic output.
+- Scorecard-only evidence must not create a default `ALLOW` or `DENY`. Low aggregate or selected check scores use `LOW_REPOSITORY_HEALTH` with `ASK`; healthy, unknown, minimal, or mapping-uncertain reports stay UNKNOWN-quality evidence such as `REPOSITORY_MAPPING_UNCERTAIN` or `SOURCE_UNAVAILABLE`.
+- Duplicate report/check source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON/structs only and do not perform live Scorecard, GitHub, clone, or network activity.
+- Public display of Scorecard source references is allowed with attribution preserved; redistribution of hosted caches, normalized dumps, or bulk derived Scorecard output remains `unknown` until current Scorecard output-data terms and any platform API terms are reviewed.
+
 Reference checked during drafting:
 
 - `https://github.com/ossf/scorecard/blob/main/LICENSE`
