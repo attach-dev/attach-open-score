@@ -243,6 +243,25 @@ Adapter note:
 - Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON only and do not perform live crates.io, Cargo, git, sparse-index, or network access.
 - Public display of normalized package/version facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw index files, hosted cache dumps, database dumps, owner/download/profile metadata, package tarballs, or package source contents remains blocked or `unknown` until separately reviewed.
 
+#### Go module services
+
+Known posture:
+
+- Current Attach planning context permits fixture-first adapter work for documented Go module proxy/index/checksum database metadata.
+- Use documented Go module services metadata endpoints such as proxy version info, version lists, and `.mod` files. Do not perform direct VCS fetching, private module lookup, source archive downloads, module zip redistribution, source inspection, or ecosystem-wide crawling.
+- Prefer `/cached-only` behavior for hosted or automated lookup flows until current service terms, acceptable-use posture, rate limits, and cache/display obligations are explicitly reviewed for bulk use.
+- Private-looking module paths must not be normalized into public `source_refs` unless the fixture is explicitly safe synthetic/example metadata. Do not publish credentials, query strings, fragments, private hostnames, or private path material in evidence or source references.
+
+Adapter note:
+
+- The v0 Go module metadata adapter foundation consumes local synthetic Go module service-shaped JSON only. It does not perform live HTTP calls, VCS commands, private module discovery, checksum database lookups, module zip/source archive downloads, package source inspection, or hosted cache behavior.
+- Accepted local metadata is limited to module path, version, version timestamp, version list text/arrays, go.mod module/go/require/retract/deprecation metadata, and source identifiers needed for source references.
+- The adapter records `source: "go-module-services"`, `proxy.golang.org` module/version identifiers and URLs as `source_id`/`url`, retrieval time, a 24-hour default TTL, `https://proxy.golang.org/` as the terms URL, and attribution text for Go module services metadata.
+- Go module services metadata is non-authoritative package context. Normal module/version metadata uses `REPOSITORY_MAPPING_UNCERTAIN` with `UNKNOWN` effect and must not produce a default `ALLOW`; explicit deprecation metadata may use `DEPRECATED_PACKAGE` with `ASK`, and exact represented retractions may use the existing unpublished/yanked ASK path without adding new public reason codes.
+- Version lists and go.mod metadata should be cached minimally with provenance and TTL. Cache normalized facts and source references, not raw module archives, source contents, private lookup results, or hosted cache dumps for redistribution.
+- Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON/text fixtures only and do not perform live Go module service calls.
+- Public display of normalized public Go module facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw service responses, hosted cache dumps, checksum database mirrors, direct VCS data, module zips, source archives, or source contents remains blocked or `unknown` until separately reviewed.
+
 References checked during drafting:
 
 - npm Terms: `https://docs.npmjs.com/policies/terms/`
