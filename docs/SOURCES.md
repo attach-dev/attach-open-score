@@ -188,11 +188,33 @@ Policy:
 - Do not use registry data to dox maintainers or expose private/non-public metadata.
 - Do not scrape pages where a documented API exists and terms prefer API access.
 
+#### npm public registry
+
+Known posture:
+
+- Current Attach planning context permits fixture-first adapter work for documented npm public registry package metadata.
+- Use public registry metadata APIs or replication paths rather than crawling `www.npmjs.com`.
+- Do not ingest npm audit/security package data into hosted/default scoring unless separately cleared. npm security/audit use remains blocked until reviewed for hosted/public derived verdicts and cache/display behavior.
+- Do not expose raw npm registry documents as an Attach upstream-data API.
+
+Adapter note:
+
+- The v0 npm registry adapter foundation consumes local npm packument/version-shaped JSON only. It does not perform live registry calls, website crawling, npm audit/security lookups, package tarball downloads, or package source inspection.
+- Accepted local metadata is limited to package/version identity, dist-tags, publish timestamps, deprecation markers, license strings, repository links, and source identifiers needed for source references.
+- The adapter records `source: "npm-registry"`, `registry.npmjs.org` package/version identifiers and URLs as `source_id`/`url`, normalization time, a 24-hour default TTL, `https://docs.npmjs.com/policies/terms/` as the terms URL, and attribution text for npm public registry metadata.
+- npm registry metadata is non-authoritative package context. Normal package/version metadata uses `REPOSITORY_MAPPING_UNCERTAIN` with `UNKNOWN` effect and must not produce a default `ALLOW`; explicit deprecation metadata may use the existing `DEPRECATED_PACKAGE` ASK path.
+- Dist-tags and package-level metadata are mutable and should use a short TTL such as 24 hours. Cache normalized package/version facts, not raw registry documents for redistribution.
+- Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON only and do not perform live npm registry calls.
+- Public display of normalized npm package/version facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw registry documents, hosted cache dumps, security/audit data, package tarballs, or package source contents remains blocked or `unknown` until separately reviewed.
+
 References checked during drafting:
 
+- npm Terms: `https://docs.npmjs.com/policies/terms/`
+- npm Open Source Terms: `https://docs.npmjs.com/policies/open-source-terms/`
+- npm crawler policy: `https://docs.npmjs.com/policies/crawlers/`
+- npm registry CLI documentation: `https://docs.npmjs.com/cli/v11/using-npm/registry/`
 - PyPI Terms: `https://policies.python.org/pypi.org/Terms-of-Service/`
 - Go module services: `https://proxy.golang.org/`
-- npm terms page was attempted but returned HTTP 403 from this runtime; must be checked manually before npm registry adapter publication.
 - crates.io policy URL attempted during drafting returned HTTP 404 for `https://crates.io/policies`; must be checked manually before crates.io adapter publication.
 
 Review gate:
