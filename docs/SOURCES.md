@@ -225,6 +225,23 @@ Adapter note:
 - Project-level metadata and Simple/Index pages are mutable. Fixtures may represent `last_serial`, `_last-serial`, or ETag presence, and normalized details should state that short-TTL serial or ETag-aware refresh is recommended. Cache normalized package/version/release-file facts, not raw registry documents for redistribution.
 - Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON only and do not perform live PyPI lookups.
 - Public display of normalized PyPI package/version/release-file facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw registry documents, cache dumps, popularity metrics, package files, package source contents, or account/user metadata remains blocked or `unknown` until separately reviewed.
+#### crates.io package index
+
+Known posture:
+
+- The crates.io package index is the Cargo dependency-resolution index. The public index is exposed through the sparse HTTP index at `https://index.crates.io/` and the git index at `https://github.com/rust-lang/crates.io-index`.
+- The Cargo Book documents the registry index format as one JSON object per published version line in each package index file, with dependency-resolution fields such as `name`, `vers`, `deps`, `cksum`, `features`, `features2`, `yanked`, `rust_version`, and `pubtime`.
+- Source terms, bulk mirroring, hosted-cache publication, and raw index redistribution need explicit review before production or public-dump use. The v0 adapter posture is normalized local facts with source references, not raw index redistribution.
+
+Adapter note:
+
+- The v0 crates.io package index adapter consumes local/synthetic sparse-index or git-index package records only. It does not perform live HTTP requests, Cargo network operations, crates.io API calls, website crawling, database-dump ingestion, package tarball downloads, or source inspection.
+- Accepted local metadata is limited to crate name/version, dependencies, features/features2, crate archive checksum (`cksum`), yanked status, minimal supported Rust version (`rust_version`), publish time (`pubtime`) when present, and source identifiers needed for provenance.
+- The adapter records `source: "crates.io-index"`, `index.crates.io` package/version identifiers, sparse index package URLs, normalization time, a 24-hour default TTL, `https://index.crates.io/` as the source/terms reference, and attribution text for crates.io package index metadata.
+- crates.io index metadata is non-authoritative package context. Normal package/version and dependency-resolution facts use `REPOSITORY_MAPPING_UNCERTAIN` with `UNKNOWN` effect and must not produce a default `ALLOW`; yanked versions use the existing `PACKAGE_UNPUBLISHED_OR_YANKED` ASK path.
+- The adapter intentionally does not model owner, maintainer profile, download-count, README, API, database-dump, website, or package-content metadata. Those source families remain blocked or `unknown` until separately reviewed.
+- Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON only and do not perform live crates.io, Cargo, git, sparse-index, or network access.
+- Public display of normalized package/version facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw index files, hosted cache dumps, database dumps, owner/download/profile metadata, package tarballs, or package source contents remains blocked or `unknown` until separately reviewed.
 
 References checked during drafting:
 
@@ -232,9 +249,11 @@ References checked during drafting:
 - npm Open Source Terms: `https://docs.npmjs.com/policies/open-source-terms/`
 - npm crawler policy: `https://docs.npmjs.com/policies/crawlers/`
 - npm registry CLI documentation: `https://docs.npmjs.com/cli/v11/using-npm/registry/`
+- crates.io package index: `https://index.crates.io/`
+- crates.io git index: `https://github.com/rust-lang/crates.io-index`
+- Cargo registry index format: `https://doc.rust-lang.org/cargo/reference/registry-index.html`
 - PyPI Terms: `https://policies.python.org/pypi.org/Terms-of-Service/`
 - Go module services: `https://proxy.golang.org/`
-- crates.io policy URL attempted during drafting returned HTTP 404 for `https://crates.io/policies`; must be checked manually before crates.io adapter publication.
 
 Review gate:
 
