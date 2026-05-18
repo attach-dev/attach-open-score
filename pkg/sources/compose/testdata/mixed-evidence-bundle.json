@@ -1,0 +1,122 @@
+{
+  "package": {
+    "ecosystem": "npm",
+    "name": "synthetic-bundle",
+    "version": "1.0.0",
+    "purl": "pkg:npm/synthetic-bundle@1.0.0",
+    "resolved": true,
+    "repository_url": "https://example.invalid/attach-open-score/synthetic-bundle"
+  },
+  "evidence_sets": [
+    {
+      "source": "osv.dev",
+      "evidence": [
+        {
+          "reason": {
+            "code": "X_SYNTHETIC_ALLOW",
+            "severity": "INFO",
+            "decision_effect": "ALLOW",
+            "message": "Synthetic adapter fixture recorded an allow-quality source observation.",
+            "source_ref_ids": [
+              "osv-query-synthetic-bundle",
+              "osv-query-synthetic-bundle"
+            ],
+            "details": {
+              "source": "osv.dev",
+              "fixture": true
+            }
+          },
+          "source_ref": {
+            "id": "osv-query-synthetic-bundle",
+            "source": "osv.dev",
+            "source_id": "npm:synthetic-bundle@1.0.0",
+            "url": "https://example.invalid/attach-open-score/osv/query/synthetic-bundle",
+            "retrieved_at": "2026-05-13T14:00:00Z",
+            "ttl_seconds": 86400,
+            "license_or_terms_url": "https://google.github.io/osv.dev/",
+            "attribution": "Synthetic OSV.dev-style fixture data for Attach Open Score tests; preserve source family, retrieval metadata, and fixture status when displaying.",
+            "attribution_required": true,
+            "redistribution": "unknown",
+            "public_display": "allowed"
+          },
+          "source_refs": [
+            {
+              "id": "osv-query-synthetic-bundle",
+              "source": "osv.dev",
+              "source_id": "npm:synthetic-bundle@1.0.0",
+              "url": "https://example.invalid/attach-open-score/osv/query/synthetic-bundle",
+              "retrieved_at": "2026-05-13T14:00:00Z",
+              "ttl_seconds": 86400,
+              "license_or_terms_url": "https://google.github.io/osv.dev/",
+              "attribution": "Synthetic OSV.dev-style fixture data for Attach Open Score tests; preserve source family, retrieval metadata, and fixture status when displaying.",
+              "attribution_required": true,
+              "redistribution": "unknown",
+              "public_display": "allowed"
+            }
+          ]
+        },
+        {
+          "reason": {
+            "code": "KNOWN_VULNERABILITY_CRITICAL",
+            "severity": "CRITICAL",
+            "decision_effect": "DENY",
+            "message": "Synthetic critical vulnerability evidence in the offline bundle.",
+            "source_ref_ids": [
+              "osv-ghsa-synthetic-critical"
+            ],
+            "details": {
+              "source": "osv.dev",
+              "advisory_id": "GHSA-synt-crit-0001"
+            }
+          },
+          "source_ref": {
+            "id": "osv-ghsa-synthetic-critical",
+            "source": "osv.dev",
+            "source_id": "GHSA-synt-crit-0001",
+            "url": "https://example.invalid/attach-open-score/osv/vulnerability/GHSA-synt-crit-0001",
+            "retrieved_at": "2026-05-13T14:00:00Z",
+            "ttl_seconds": 86400,
+            "license_or_terms_url": "https://google.github.io/osv.dev/",
+            "attribution": "Synthetic OSV.dev-style vulnerability fixture for Attach Open Score tests; preserve source family, retrieval metadata, and fixture status when displaying.",
+            "attribution_required": true,
+            "redistribution": "unknown",
+            "public_display": "allowed"
+          }
+        }
+      ]
+    },
+    {
+      "source": "openssf-scorecard",
+      "evidence": [
+        {
+          "reason": {
+            "code": "LOW_REPOSITORY_HEALTH",
+            "severity": "MEDIUM",
+            "decision_effect": "ASK",
+            "message": "Synthetic Scorecard report contains low repository health.",
+            "source_ref_ids": [
+              "scorecard-low-repository-health"
+            ],
+            "details": {
+              "source": "openssf-scorecard",
+              "score": 3.5
+            }
+          },
+          "source_ref": {
+            "id": "scorecard-low-repository-health",
+            "source": "openssf-scorecard",
+            "source_id": "https://example.invalid/attach-open-score/synthetic-bundle@2026-05-13T14:00:00Z",
+            "url": "https://example.invalid/attach-open-score/scorecard/synthetic-bundle",
+            "retrieved_at": "2026-05-13T14:00:00Z",
+            "ttl_seconds": 86400,
+            "license_or_terms_url": "https://github.com/ossf/scorecard/blob/main/LICENSE",
+            "attribution": "Synthetic OpenSSF Scorecard-style fixture data for Attach Open Score tests; preserve check score, reason, and retrieval metadata when displaying.",
+            "attribution_required": true,
+            "redistribution": "unknown",
+            "public_display": "allowed"
+          }
+        }
+      ]
+    }
+  ]
+}

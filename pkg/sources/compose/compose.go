@@ -9,8 +9,8 @@ import (
 
 // EvidenceSet labels evidence produced by one source adapter family.
 type EvidenceSet struct {
-	Name     string
-	Evidence []schema.Evidence
+	Name     string            `json:"source"`
+	Evidence []schema.Evidence `json:"evidence"`
 }
 
 // Request combines already-normalized adapter evidence into one offline scorer
