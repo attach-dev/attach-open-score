@@ -14,6 +14,7 @@ import (
 	"github.com/attach-dev/attach-open-score/internal/fixtures"
 	"github.com/attach-dev/attach-open-score/pkg/schema"
 	"github.com/attach-dev/attach-open-score/pkg/score"
+	"github.com/attach-dev/attach-open-score/pkg/sources/compose"
 )
 
 func main() {
@@ -31,6 +32,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 func runE(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	if len(args) > 0 && args[0] == "score" {
 		return runScore(args[1:], stdin, stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "score-bundle" {
+		return runScoreBundle(args[1:], stdin, stdout, stderr)
 	}
 	return runFixtureValidation(args, stdout, stderr)
 }
@@ -75,7 +79,7 @@ func runScore(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 		return fmt.Errorf("score requires --input <path>, or --input - for stdin")
 	}
 
-	data, err := readScoreInput(*input, stdin)
+	data, err := readInput(*input, stdin)
 	if err != nil {
 		return err
 	}
@@ -85,11 +89,7 @@ func runScore(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 		return err
 	}
 
-	engineProfile := *profile
-	if engineProfile == "default" {
-		engineProfile = ""
-	}
-	engine, err := score.NewEngine(score.Options{PolicyProfile: engineProfile})
+	engine, err := newScoreEngine(*profile)
 	if err != nil {
 		return err
 	}
@@ -108,6 +108,60 @@ func runScore(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	}
 	_, err = fmt.Fprintln(stdout)
 	return err
+}
+
+func runScoreBundle(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
+	flags := flag.NewFlagSet("attach-open-score score-bundle", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	input := flags.String("input", "", "offline evidence bundle JSON path, or - for stdin")
+	profile := flags.String("policy-profile", "default", "policy profile: default, local-dev-default, ci-strict, or audit-only")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() > 0 {
+		return fmt.Errorf("score-bundle does not accept positional arguments: %v", flags.Args())
+	}
+	if *input == "" {
+		return fmt.Errorf("score-bundle requires --input <path>, or --input - for stdin")
+	}
+
+	data, err := readInput(*input, stdin)
+	if err != nil {
+		return err
+	}
+
+	request, err := compose.RequestFromBundleJSON(data)
+	if err != nil {
+		return err
+	}
+
+	engine, err := newScoreEngine(*profile)
+	if err != nil {
+		return err
+	}
+
+	verdict, err := engine.Evaluate(request)
+	if err != nil {
+		return err
+	}
+
+	encoded, err := json.MarshalIndent(verdict, "", "  ")
+	if err != nil {
+		return err
+	}
+	if _, err := stdout.Write(encoded); err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(stdout)
+	return err
+}
+
+func newScoreEngine(profile string) (score.Engine, error) {
+	engineProfile := profile
+	if engineProfile == "default" {
+		engineProfile = ""
+	}
+	return score.NewEngine(score.Options{PolicyProfile: engineProfile})
 }
 
 func decodeScoreRequest(data []byte) (schema.Request, error) {
@@ -221,7 +275,7 @@ func requireJSONInt(raw json.RawMessage, path string) error {
 	return nil
 }
 
-func readScoreInput(path string, stdin io.Reader) ([]byte, error) {
+func readInput(path string, stdin io.Reader) ([]byte, error) {
 	if path == "-" {
 		return io.ReadAll(stdin)
 	}
