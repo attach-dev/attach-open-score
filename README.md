@@ -12,6 +12,7 @@ Start here:
 - `docs/DECISION_SEMANTICS.md` — ALLOW / ASK / DENY / UNKNOWN behavior and policy profiles.
 - `docs/REASON_CODES.md` — v0 deterministic reason-code taxonomy.
 - `docs/LIMITATIONS.md` — what v0 can and cannot guarantee.
+- `docs/examples/multi-ecosystem-provider-consumer-fixtures.md` — offline fixture-backed examples for npm, PyPI, crates.io/Cargo, Go module, and Yarn-consumer package coordinates.
 - `spec/v0/score.schema.json` — machine-readable JSON Schema draft.
 - `docs/plans/local-dogfood-score-walkthrough.md` — offline local dogfood walkthrough for inspecting synthetic ALLOW / ASK / DENY / UNKNOWN fixture verdicts.
 - `docs/plans/2026-05-07-language-and-layout-decision.md` — ADR recording the Go-first core + JSON schema as the cross-language contract (retroactive).
@@ -24,7 +25,7 @@ go run ./cmd/attach-open-score --root .
 go run ./cmd/attach-open-score score --input request.json
 ```
 
-- `fixtures/v0/` — synthetic public-safe example verdicts.
+- `fixtures/v0/` — synthetic public-safe example verdicts, including multi-ecosystem provider-consumer coordinates.
 - `score --input` evaluates a local, offline v0 request JSON. The request shape is intentionally separate from fixture verdict JSON:
   - top-level `package` is required and uses the package identity fields from `docs/SCORE_SCHEMA.md`;
   - top-level `evidence` is required for CLI scoring and must contain one or more normalized evidence items;

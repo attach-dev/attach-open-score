@@ -1,0 +1,155 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "attach-open-score-go/dev",
+  "package": {
+    "ecosystem": "pypi",
+    "name": "synthetic-pypi-provider-consumer",
+    "version": "2.1.0",
+    "purl": "pkg:pypi/synthetic-pypi-provider-consumer@2.1.0",
+    "requested_spec": "==2.1.0",
+    "resolved": true,
+    "repository_url": "https://github.com/attach-dev/synthetic-pypi-provider-consumer"
+  },
+  "decision": "ASK",
+  "score": 45,
+  "confidence": "LOW",
+  "reasons": [
+    {
+      "code": "REPOSITORY_MAPPING_UNCERTAIN",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "PyPI public registry metadata for synthetic-pypi-provider-consumer 2.1.0 was normalized as non-authoritative package context only.",
+      "source_ref_ids": [
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-license",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-requires-python",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-project-urls"
+      ],
+      "details": {
+        "source": "pypi-registry",
+        "ecosystem": "pypi",
+        "package_name": "synthetic-pypi-provider-consumer",
+        "version": "2.1.0",
+        "purl": "pkg:pypi/synthetic-pypi-provider-consumer@2.1.0",
+        "selected_version_source": "requested_version",
+        "metadata_format": "pypi_json",
+        "release_file_count": 2,
+        "yanked_file_count": 0,
+        "requires_python_status": "reported_by_pypi",
+        "license_metadata_status": "reported_by_pypi",
+        "repository_mapping_status": "reported_by_pypi_project_urls",
+        "serial_ttl_posture": "short_ttl_serial_or_etag_aware_refresh_recommended",
+        "request_posture": "fixture_first_pypi_json_and_index_metadata_only_no_live_calls_no_account_or_contact_scraping",
+        "terms_url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+        "retrieved_at": "2026-05-20T12:00:00Z",
+        "ttl_seconds": 86400,
+        "redistribution": "unknown",
+        "public_display": "allowed",
+        "last_serial": 1234567,
+        "license": "MIT",
+        "requires_python": ">=3.9",
+        "repository_url": "https://github.com/attach-dev/synthetic-pypi-provider-consumer",
+        "project_urls": {
+          "Source": "https://github.com/attach-dev/synthetic-pypi-provider-consumer"
+        },
+        "release_files": [
+          {
+            "filename": "synthetic_pypi_provider_consumer-2.1.0-py3-none-any.whl",
+            "yanked": false,
+            "packagetype": "bdist_wheel",
+            "python_version": "py3",
+            "requires_python": ">=3.9",
+            "uploaded_at": "2026-05-20T09:30:00Z",
+            "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          {
+            "filename": "synthetic-pypi-provider-consumer-2.1.0.tar.gz",
+            "yanked": false,
+            "packagetype": "sdist",
+            "python_version": "source",
+            "requires_python": ">=3.9",
+            "uploaded_at": "2026-05-20T09:31:00Z",
+            "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        ]
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0",
+      "source": "pypi-registry",
+      "source_id": "pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0",
+      "url": "https://pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0/json",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+      "attribution": "Source: PyPI JSON release metadata from pypi.org; preserve project name, version, release-file metadata, retrieval time, TTL, and attribution. Do not imply PyPI endorsement.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer",
+      "source": "pypi-registry",
+      "source_id": "pypi.org/pypi/synthetic-pypi-provider-consumer",
+      "url": "https://pypi.org/pypi/synthetic-pypi-provider-consumer/json",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+      "attribution": "Source: PyPI JSON project metadata from pypi.org; project-level metadata is mutable and should use X-PyPI-Last-Serial-aware refresh.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-license",
+      "source": "pypi-registry",
+      "source_id": "pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0#license",
+      "url": "https://pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0/json",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+      "attribution": "Source: PyPI JSON project metadata license field from pypi.org; license strings are publisher-provided metadata.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-requires-python",
+      "source": "pypi-registry",
+      "source_id": "pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0#requires-python",
+      "url": "https://pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0/json",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+      "attribution": "Source: PyPI project or release-file metadata requires-python field from pypi.org; compatibility strings are publisher-provided metadata.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-project-urls",
+      "source": "pypi-registry",
+      "source_id": "pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0#project-urls",
+      "url": "https://pypi.org/pypi/synthetic-pypi-provider-consumer/2.1.0/json",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+      "attribution": "Source: PyPI project_urls metadata from pypi.org; repository mapping is non-authoritative.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-20T12:00:00Z",
+  "ttl_seconds": 86400,
+  "limitations": [
+    "Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
+    "Synthetic provider-consumer fixture; not a real package evaluation.",
+    "Synthetic local adapter inputs only; no live registry, package artifact, account page, popularity feed, repository clone, or hosted cache lookup was performed.",
+    "PyPI examples intentionally omit personal contact fields and raw upstream response documents."
+  ]
+}

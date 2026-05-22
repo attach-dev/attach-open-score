@@ -1,0 +1,122 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "attach-open-score-go/dev",
+  "package": {
+    "ecosystem": "go",
+    "name": "example.com/provider/consumer",
+    "version": "v0.3.0",
+    "purl": "pkg:golang/example.com/provider/consumer@v0.3.0",
+    "requested_spec": "v0.3.0",
+    "resolved": true
+  },
+  "decision": "ASK",
+  "score": 45,
+  "confidence": "LOW",
+  "reasons": [
+    {
+      "code": "REPOSITORY_MAPPING_UNCERTAIN",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "Go module services metadata for example.com/provider/consumer@v0.3.0 was normalized as non-authoritative package context only.",
+      "source_ref_ids": [
+        "go-module-services-proxy.golang.org-example.com-provider-consumer-v0.3.0",
+        "go-module-services-proxy.golang.org-example.com-provider-consumer",
+        "go-module-services-proxy.golang.org-example.com-provider-consumer-versions",
+        "go-module-services-proxy.golang.org-example.com-provider-consumer-v0.3.0-go.mod"
+      ],
+      "details": {
+        "source": "go-module-services",
+        "ecosystem": "go",
+        "module_path": "example.com/provider/consumer",
+        "package_name": "example.com/provider/consumer",
+        "version": "v0.3.0",
+        "purl": "pkg:golang/example.com/provider/consumer@v0.3.0",
+        "selected_version_source": "requested_version",
+        "source_url_status": "reported",
+        "request_posture": "fixture_first_documented_go_module_services_metadata_only_no_live_calls_no_direct_vcs_no_private_lookup_no_zip_or_source_archive_redistribution",
+        "terms_url": "https://proxy.golang.org/",
+        "retrieved_at": "2026-05-20T12:00:00Z",
+        "ttl_seconds": 86400,
+        "redistribution": "unknown",
+        "public_display": "allowed",
+        "version_time": "2026-05-20T08:00:00Z",
+        "versions": [
+          "v0.2.0",
+          "v0.3.0"
+        ],
+        "version_count": 2,
+        "version_list_status": "reported_by_go_module_services",
+        "go_mod_status": "reported_by_go_module_services",
+        "go_mod_module_path": "example.com/provider/consumer",
+        "go_version": "1.22",
+        "requirements_count": 1,
+        "requirements_status": "reported_by_go_mod_redacted",
+        "deprecated": false,
+        "retracted": false
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "go-module-services-proxy.golang.org-example.com-provider-consumer-v0.3.0",
+      "source": "go-module-services",
+      "source_id": "proxy.golang.org/example.com/provider/consumer@v0.3.0",
+      "url": "https://proxy.golang.org/example.com/provider/consumer/@v/v0.3.0.info",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://proxy.golang.org/",
+      "attribution": "Source: Go module services version metadata from proxy.golang.org; preserve module path, version, source URL, retrieval time, and attribution. Do not imply Google or Go project endorsement.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "go-module-services-proxy.golang.org-example.com-provider-consumer",
+      "source": "go-module-services",
+      "source_id": "proxy.golang.org/example.com/provider/consumer",
+      "url": "https://proxy.golang.org/example.com/provider/consumer/@v/list",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://proxy.golang.org/",
+      "attribution": "Source: Go module services module metadata from proxy.golang.org; module metadata is non-authoritative package context and should be refreshed before relying on mutable endpoints.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "go-module-services-proxy.golang.org-example.com-provider-consumer-versions",
+      "source": "go-module-services",
+      "source_id": "proxy.golang.org/example.com/provider/consumer#versions",
+      "url": "https://proxy.golang.org/example.com/provider/consumer/@v/list",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://proxy.golang.org/",
+      "attribution": "Source: Go module proxy version list metadata from proxy.golang.org; version lists are service metadata and not an allow/deny signal.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "go-module-services-proxy.golang.org-example.com-provider-consumer-v0.3.0-go.mod",
+      "source": "go-module-services",
+      "source_id": "proxy.golang.org/example.com/provider/consumer@v0.3.0#go.mod",
+      "url": "https://proxy.golang.org/example.com/provider/consumer/@v/v0.3.0.mod",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://proxy.golang.org/",
+      "attribution": "Source: Go module proxy go.mod metadata from proxy.golang.org; requirements, retractions, and deprecation comments are publisher-provided module metadata.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-20T12:00:00Z",
+  "ttl_seconds": 86400,
+  "limitations": [
+    "Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
+    "Synthetic provider-consumer fixture; not a real package evaluation.",
+    "Synthetic local adapter inputs only; no live Go module service, direct VCS, checksum database, module zip, source archive, repository clone, or hosted cache lookup was performed.",
+    "Go module metadata is package context only and is not a standalone allow signal."
+  ]
+}

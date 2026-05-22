@@ -1,0 +1,149 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "attach-open-score-go/dev",
+  "package": {
+    "ecosystem": "crates",
+    "name": "synthetic-cargo-provider-consumer",
+    "version": "0.8.0",
+    "purl": "pkg:cargo/synthetic-cargo-provider-consumer@0.8.0",
+    "requested_spec": "^0.8",
+    "resolved": true
+  },
+  "decision": "ASK",
+  "score": 45,
+  "confidence": "LOW",
+  "reasons": [
+    {
+      "code": "REPOSITORY_MAPPING_UNCERTAIN",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "crates.io package index metadata for synthetic-cargo-provider-consumer@0.8.0 was normalized as non-authoritative dependency-resolution context only.",
+      "source_ref_ids": [
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-dependencies",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-features",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-checksum"
+      ],
+      "details": {
+        "source": "crates.io-index",
+        "ecosystem": "crates",
+        "package_name": "synthetic-cargo-provider-consumer",
+        "version": "0.8.0",
+        "purl": "pkg:cargo/synthetic-cargo-provider-consumer@0.8.0",
+        "selected_version_source": "requested_version",
+        "yanked": false,
+        "request_posture": "fixture_first_crates_io_sparse_or_git_index_dependency_resolution_metadata_only_no_live_calls_no_api_crawling_no_db_dump",
+        "terms_url": "https://index.crates.io/",
+        "index_format_url": "https://doc.rust-lang.org/cargo/reference/registry-index.html",
+        "git_index_url": "https://github.com/rust-lang/crates.io-index",
+        "retrieved_at": "2026-05-20T12:00:00Z",
+        "ttl_seconds": 86400,
+        "redistribution": "unknown",
+        "public_display": "allowed",
+        "repository_mapping_status": "not_reported_by_crates_io_index",
+        "dependencies": [
+          {
+            "name": "serde",
+            "req": "^1.0",
+            "features": [
+              "derive"
+            ],
+            "optional": false,
+            "default_features": true,
+            "kind": "normal"
+          }
+        ],
+        "dependencies_status": "reported_by_crates_io_index",
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": []
+        },
+        "features_status": "reported_by_crates_io_index",
+        "checksum": "3333333333333333333333333333333333333333333333333333333333333333",
+        "checksum_status": "reported_by_crates_io_index",
+        "rust_version": "1.74",
+        "pubtime": "2026-05-20T08:00:00Z",
+        "index_schema_version": 2
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0",
+      "source": "crates.io-index",
+      "source_id": "index.crates.io/synthetic-cargo-provider-consumer@0.8.0",
+      "url": "https://index.crates.io/sy/nt/synthetic-cargo-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://index.crates.io/",
+      "attribution": "Source: crates.io package index metadata from index.crates.io or rust-lang/crates.io-index; preserve crate name, version, index URL, retrieval time, and attribution. Do not imply crates.io or Rust project endorsement.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer",
+      "source": "crates.io-index",
+      "source_id": "index.crates.io/synthetic-cargo-provider-consumer",
+      "url": "https://index.crates.io/sy/nt/synthetic-cargo-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://index.crates.io/",
+      "attribution": "Source: crates.io package index crate metadata file from index.crates.io or rust-lang/crates.io-index; package-level index metadata is not an allow/deny signal.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-dependencies",
+      "source": "crates.io-index",
+      "source_id": "index.crates.io/synthetic-cargo-provider-consumer@0.8.0#dependencies",
+      "url": "https://index.crates.io/sy/nt/synthetic-cargo-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://index.crates.io/",
+      "attribution": "Source: crates.io package index dependency metadata used by Cargo resolution; dependency facts are publisher/index metadata and non-authoritative for risk allow decisions.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-features",
+      "source": "crates.io-index",
+      "source_id": "index.crates.io/synthetic-cargo-provider-consumer@0.8.0#features",
+      "url": "https://index.crates.io/sy/nt/synthetic-cargo-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://index.crates.io/",
+      "attribution": "Source: crates.io package index feature metadata used by Cargo resolution; features and features2 are normalized as dependency-resolution context.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-checksum",
+      "source": "crates.io-index",
+      "source_id": "index.crates.io/synthetic-cargo-provider-consumer@0.8.0#checksum",
+      "url": "https://index.crates.io/sy/nt/synthetic-cargo-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://index.crates.io/",
+      "attribution": "Source: crates.io package index cksum field for the crate archive SHA256 checksum; this records index metadata only and does not fetch or inspect crate contents.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-20T12:00:00Z",
+  "ttl_seconds": 86400,
+  "limitations": [
+    "Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
+    "Synthetic provider-consumer fixture; not a real package evaluation.",
+    "Synthetic local adapter inputs only; no live crates.io, Cargo, git, package artifact, repository clone, or hosted cache lookup was performed.",
+    "crates.io package index evidence is dependency-resolution metadata only and is not a standalone allow signal."
+  ]
+}
