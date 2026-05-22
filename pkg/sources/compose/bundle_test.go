@@ -66,10 +66,10 @@ func TestBundleJSONRejectsConflictingSourceRefs(t *testing.T) {
 
 	_, err := RequestFromBundleJSON(mustBundleJSON(t, Bundle{
 		Package: testBundlePackage(),
-		EvidenceSets: []EvidenceSet{
-			{Name: depsdev.SourceName, Evidence: []schema.Evidence{bundleEvidence(reasons.SourceStale, "MEDIUM", schema.DecisionEffectAsk, shared)}},
-			{Name: scorecard.SourceName, Evidence: []schema.Evidence{bundleEvidence(reasons.LowRepositoryHealth, "MEDIUM", schema.DecisionEffectAsk, conflicting)}},
-		},
+		EvidenceSets: []EvidenceSet{{Name: depsdev.SourceName, Evidence: []schema.Evidence{
+			bundleEvidence(reasons.SourceStale, "MEDIUM", schema.DecisionEffectAsk, shared),
+			bundleEvidence(reasons.SourceStale, "MEDIUM", schema.DecisionEffectAsk, conflicting),
+		}}},
 	}))
 	if err == nil {
 		t.Fatalf("RequestFromBundleJSON returned nil error for conflicting source_ref")
@@ -135,10 +135,16 @@ func TestBundleJSONRejectsMalformedInput(t *testing.T) {
 		{name: "trailing data", data: `{"package":{},"evidence_sets":[]} {}`, want: "trailing data"},
 		{name: "missing evidence sets", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true}}`, want: "evidence_sets is required"},
 		{name: "missing package resolved", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg"},"evidence_sets":[]}`, want: "package.resolved is required"},
+		{name: "null package resolved", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":null},"evidence_sets":[]}`, want: "package.resolved must be bool"},
+		{name: "null optional package scalar", data: `{"package":{"ecosystem":"npm","name":"pkg","version":null,"purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[]}`, want: "package.version must be string"},
 		{name: "missing set evidence", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev"}]}`, want: "evidence is required"},
-		{name: "missing source ref ttl", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"KNOWN_VULNERABILITY_HIGH","severity":"HIGH","decision_effect":"ASK","message":"m","source_ref_ids":["s1"]},"source_ref":{"id":"s1","source":"osv.dev","url":"https://example.invalid/osv","retrieved_at":"2026-05-18T00:00:00Z","license_or_terms_url":"https://example.invalid/terms","attribution":"OSV","attribution_required":true,"redistribution":"metadata_only","public_display":"summary"}}]}]}`, want: "source_ref.ttl_seconds is required"},
+		{name: "missing source ref ttl", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"KNOWN_VULNERABILITY_HIGH","severity":"HIGH","decision_effect":"ASK","message":"m","source_ref_ids":["s1"]},"source_ref":{"id":"s1","source":"osv.dev","source_id":"OSV-2026-1","url":"https://example.invalid/osv","retrieved_at":"2026-05-18T00:00:00Z","license_or_terms_url":"https://example.invalid/terms","attribution":"OSV","attribution_required":true,"redistribution":"metadata_only","public_display":"summary"}}]}]}`, want: "source_ref.ttl_seconds is required"},
+		{name: "null source ref ttl", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"KNOWN_VULNERABILITY_HIGH","severity":"HIGH","decision_effect":"ASK","message":"m","source_ref_ids":["s1"]},"source_ref":{"id":"s1","source":"osv.dev","source_id":"OSV-2026-1","url":"https://example.invalid/osv","retrieved_at":"2026-05-18T00:00:00Z","ttl_seconds":null,"license_or_terms_url":"https://example.invalid/terms","attribution":"OSV","attribution_required":true,"redistribution":"metadata_only","public_display":"summary"}}]}]}`, want: "source_ref.ttl_seconds must be number"},
+		{name: "null attribution required", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"KNOWN_VULNERABILITY_HIGH","severity":"HIGH","decision_effect":"ASK","message":"m","source_ref_ids":["s1"]},"source_ref":{"id":"s1","source":"osv.dev","source_id":"OSV-2026-1","url":"https://example.invalid/osv","retrieved_at":"2026-05-18T00:00:00Z","ttl_seconds":86400,"license_or_terms_url":"https://example.invalid/terms","attribution":"OSV","attribution_required":null,"redistribution":"metadata_only","public_display":"summary"}}]}]}`, want: "source_ref.attribution_required must be bool"},
+		{name: "source ref mismatches set source", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"KNOWN_VULNERABILITY_HIGH","severity":"HIGH","decision_effect":"ASK","message":"m","source_ref_ids":["s1"]},"source_ref":{"id":"s1","source":"deps.dev","source_id":"pkg:npm/pkg@1.0.0","url":"https://example.invalid/deps","retrieved_at":"2026-05-18T00:00:00Z","ttl_seconds":86400,"license_or_terms_url":"https://example.invalid/terms","attribution":"deps.dev","attribution_required":true,"redistribution":"metadata_only","public_display":"summary"}}]}]}`, want: "does not match evidence_set source"},
 		{name: "proprietary source", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"socket_score_export","evidence":[]}]}`, want: "not an allowed public/open source"},
-		{name: "raw details", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"X_SYNTHETIC","severity":"LOW","decision_effect":"NONE","message":"m","details":{"raw_payload":{"x":1}}}}]}]}`, want: "not allowed"},
+		{name: "raw reason code", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"X_RAW__UPSTREAM","severity":"LOW","decision_effect":"NONE","message":"m"}}]}]}`, want: "raw upstream"},
+		{name: "raw reason message", data: `{"package":{"ecosystem":"npm","name":"pkg","purl":"pkg:npm/pkg","resolved":true},"evidence_sets":[{"source":"osv.dev","evidence":[{"reason":{"code":"X_SYNTHETIC","severity":"LOW","decision_effect":"NONE","message":"raw-upstream payload included"}}]}]}`, want: "raw upstream"},
 	}
 
 	for _, tt := range tests {

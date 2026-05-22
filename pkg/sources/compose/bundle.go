@@ -109,6 +109,17 @@ func requireBundleJSONFields(data []byte) error {
 	if err := requireJSONObjectFields(pkgRaw, "package", "ecosystem", "name", "purl", "resolved"); err != nil {
 		return err
 	}
+	if err := requireJSONObjectFieldTypes(pkgRaw, "package", map[string]string{
+		"ecosystem":      "string",
+		"name":           "string",
+		"version":        "string",
+		"purl":           "string",
+		"requested_spec": "string",
+		"repository_url": "string",
+		"resolved":       "bool",
+	}); err != nil {
+		return err
+	}
 	evidenceSetsRaw, ok := raw["evidence_sets"]
 	if !ok {
 		return errors.New("evidence bundle evidence_sets is required")
@@ -139,6 +150,14 @@ func requireBundleJSONFields(data []byte) error {
 			if err := requireJSONObjectFields(reasonRaw, itemPrefix+".reason", "code", "severity", "decision_effect", "message"); err != nil {
 				return err
 			}
+			if err := requireJSONObjectFieldTypes(reasonRaw, itemPrefix+".reason", map[string]string{
+				"code":            "string",
+				"severity":        "string",
+				"decision_effect": "string",
+				"message":         "string",
+			}); err != nil {
+				return err
+			}
 			if sourceRefRaw, ok := item["source_ref"]; ok {
 				if err := requireSourceRefJSONFields(sourceRefRaw, itemPrefix+".source_ref"); err != nil {
 					return err
@@ -161,7 +180,22 @@ func requireBundleJSONFields(data []byte) error {
 }
 
 func requireSourceRefJSONFields(raw json.RawMessage, path string) error {
-	return requireJSONObjectFields(raw, path, "id", "source", "url", "retrieved_at", "ttl_seconds", "license_or_terms_url", "attribution", "attribution_required", "redistribution", "public_display")
+	if err := requireJSONObjectFields(raw, path, "id", "source", "source_id", "url", "retrieved_at", "ttl_seconds", "license_or_terms_url", "attribution", "attribution_required", "redistribution", "public_display"); err != nil {
+		return err
+	}
+	return requireJSONObjectFieldTypes(raw, path, map[string]string{
+		"id":                   "string",
+		"source":               "string",
+		"source_id":            "string",
+		"url":                  "string",
+		"retrieved_at":         "string",
+		"ttl_seconds":          "number",
+		"license_or_terms_url": "string",
+		"attribution":          "string",
+		"attribution_required": "bool",
+		"redistribution":       "string",
+		"public_display":       "string",
+	})
 }
 
 func requireJSONObjectFields(raw json.RawMessage, path string, fields ...string) error {
@@ -173,6 +207,50 @@ func requireJSONObjectFields(raw json.RawMessage, path string, fields ...string)
 		if _, ok := object[field]; !ok {
 			return fmt.Errorf("evidence bundle %s.%s is required", path, field)
 		}
+	}
+	return nil
+}
+
+func requireJSONObjectFieldTypes(raw json.RawMessage, path string, fieldTypes map[string]string) error {
+	var object map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &object); err != nil {
+		return fmt.Errorf("invalid evidence bundle %s: %w", path, err)
+	}
+	for field, kind := range fieldTypes {
+		rawValue, ok := object[field]
+		if !ok {
+			continue
+		}
+		if err := requireJSONKind(rawValue, kind); err != nil {
+			return fmt.Errorf("evidence bundle %s.%s must be %s", path, field, kind)
+		}
+	}
+	return nil
+}
+
+func requireJSONKind(raw json.RawMessage, kind string) error {
+	var value any
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return err
+	}
+	switch kind {
+	case "string":
+		_, ok := value.(string)
+		if !ok {
+			return errors.New("not string")
+		}
+	case "bool":
+		_, ok := value.(bool)
+		if !ok {
+			return errors.New("not bool")
+		}
+	case "number":
+		_, ok := value.(float64)
+		if !ok {
+			return errors.New("not number")
+		}
+	default:
+		return fmt.Errorf("unsupported JSON kind %q", kind)
 	}
 	return nil
 }
@@ -222,6 +300,19 @@ func validateBundleEvidence(setName string, evidence schema.Evidence) error {
 		strings.TrimSpace(string(evidence.Reason.DecisionEffect)) == "" || strings.TrimSpace(evidence.Reason.Message) == "" {
 		return errors.New("reason is incomplete")
 	}
+	for _, value := range []struct {
+		path  string
+		value string
+	}{
+		{path: "reason.code", value: evidence.Reason.Code},
+		{path: "reason.severity", value: evidence.Reason.Severity},
+		{path: "reason.decision_effect", value: string(evidence.Reason.DecisionEffect)},
+		{path: "reason.message", value: evidence.Reason.Message},
+	} {
+		if err := rejectProprietaryString(value.path, value.value); err != nil {
+			return err
+		}
+	}
 	if err := rejectRawOrProprietaryDetails(evidence.Reason.Details, "reason.details"); err != nil {
 		return err
 	}
@@ -241,7 +332,6 @@ func validateBundleEvidence(setName string, evidence schema.Evidence) error {
 }
 
 func validateBundleSourceRef(setName string, sourceRef schema.SourceRef) error {
-	_ = setName
 	for _, value := range []struct {
 		path  string
 		value string
@@ -262,7 +352,7 @@ func validateBundleSourceRef(setName string, sourceRef schema.SourceRef) error {
 	if strings.TrimSpace(sourceRef.ID) == "" {
 		return errors.New("source_ref id is required")
 	}
-	if strings.TrimSpace(sourceRef.Source) == "" || strings.TrimSpace(sourceRef.URL) == "" ||
+	if strings.TrimSpace(sourceRef.Source) == "" || strings.TrimSpace(sourceRef.SourceID) == "" || strings.TrimSpace(sourceRef.URL) == "" ||
 		strings.TrimSpace(sourceRef.RetrievedAt) == "" || strings.TrimSpace(sourceRef.LicenseOrTermsURL) == "" ||
 		strings.TrimSpace(sourceRef.Attribution) == "" || strings.TrimSpace(sourceRef.Redistribution) == "" ||
 		strings.TrimSpace(sourceRef.PublicDisplay) == "" || sourceRef.TTLSeconds < 0 {
@@ -274,37 +364,44 @@ func validateBundleSourceRef(setName string, sourceRef schema.SourceRef) error {
 	if !allowedBundleSource(sourceRef.Source) {
 		return fmt.Errorf("source_ref %q source %q is not an allowed public/open source", sourceRef.ID, sourceRef.Source)
 	}
+	if canonicalBundleSource(sourceRef.Source) != canonicalBundleSource(setName) {
+		return fmt.Errorf("source_ref %q source %q does not match evidence_set source %q", sourceRef.ID, sourceRef.Source, setName)
+	}
 	return nil
 }
 
 func allowedBundleSource(source string) bool {
-	source = strings.TrimSpace(strings.ToLower(source))
-	switch source {
-	case "osv.dev", "github-advisory-database", "ghsa", "github_advisory_database", "deps.dev", "openssf-scorecard", "npm-registry", "pypi", "crates.io", "go-module-services":
-		return true
-	default:
-		return false
-	}
+	return canonicalBundleSource(source) != ""
 }
 
-func sameBundleSourceFamily(setName, source string) bool {
-	setName = strings.ToLower(setName)
-	source = strings.ToLower(source)
-	if setName == source {
-		return true
+func canonicalBundleSource(source string) string {
+	switch strings.TrimSpace(strings.ToLower(source)) {
+	case "osv.dev", "osv":
+		return "osv.dev"
+	case "github-advisory-database", "ghsa", "github_advisory_database":
+		return "github-advisory-database"
+	case "deps.dev":
+		return "deps.dev"
+	case "openssf-scorecard", "scorecard":
+		return "openssf-scorecard"
+	case "npm-registry", "npm_public_facts":
+		return "npm-registry"
+	case "pypi", "pypi-registry", "pypi_public_facts":
+		return "pypi"
+	case "crates.io", "crates.io-index", "crates_public_facts":
+		return "crates.io"
+	case "go-module-services", "go_module_public_facts":
+		return "go-module-services"
+	default:
+		return ""
 	}
-	for _, marker := range []string{"osv", "ghsa", "github", "deps", "scorecard", "openssf", "npm", "pypi", "crates", "cargo", "go", "registry"} {
-		if strings.Contains(setName, marker) && strings.Contains(source, marker) {
-			return true
-		}
-	}
-	return false
 }
 
 func rejectProprietaryString(path, value string) error {
 	lower := strings.ToLower(value)
+	normalized := strings.Join(strings.Fields(strings.NewReplacer("_", " ", "-", " ").Replace(lower)), " ")
 	for _, blocked := range []string{"socket", "snyk", "aikido", "sonatype", "endor", "raw upstream", "raw payload", "raw dump", "private registry", "private package"} {
-		if strings.Contains(lower, blocked) {
+		if strings.Contains(lower, blocked) || strings.Contains(normalized, blocked) {
 			return fmt.Errorf("%s contains blocked proprietary/raw/private source marker %q", path, blocked)
 		}
 	}
