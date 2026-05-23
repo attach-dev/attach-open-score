@@ -1,0 +1,115 @@
+{
+  "schema_version": "provider-consumer-fixture-manifest/v0",
+  "description": "Offline provider-consumer examples for Attach Open Score-compatible provider implementations. These entries are fixture metadata only; they are not hosted/default provider claims and do not contain live upstream records.",
+  "entries": [
+    {
+      "id": "npm",
+      "fixture": "fixtures/v0/ask-provider-consumer-npm.json",
+      "ecosystem": "npm",
+      "package": "synthetic-npm-provider-consumer",
+      "version": "1.4.0",
+      "purl": "pkg:npm/synthetic-npm-provider-consumer@1.4.0",
+      "requested_spec": "^1.4.0",
+      "expected_decision": "ASK",
+      "expected_confidence": "LOW",
+      "reason_codes": [
+        "REPOSITORY_MAPPING_UNCERTAIN"
+      ],
+      "source_ref_ids": [
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-dist-tags",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0-license",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0-repository"
+      ],
+      "provenance_posture": "offline-normalized-public-fixture"
+    },
+    {
+      "id": "pypi",
+      "fixture": "fixtures/v0/ask-provider-consumer-pypi.json",
+      "ecosystem": "pypi",
+      "package": "synthetic-pypi-provider-consumer",
+      "version": "2.1.0",
+      "purl": "pkg:pypi/synthetic-pypi-provider-consumer@2.1.0",
+      "requested_spec": "==2.1.0",
+      "expected_decision": "ASK",
+      "expected_confidence": "LOW",
+      "reason_codes": [
+        "REPOSITORY_MAPPING_UNCERTAIN"
+      ],
+      "source_ref_ids": [
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-license",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-requires-python",
+        "pypi-registry-pypi.org-pypi-synthetic-pypi-provider-consumer-2.1.0-project-urls"
+      ],
+      "provenance_posture": "offline-normalized-public-fixture"
+    },
+    {
+      "id": "crates",
+      "fixture": "fixtures/v0/ask-provider-consumer-crates.json",
+      "ecosystem": "crates",
+      "package": "synthetic-cargo-provider-consumer",
+      "version": "0.8.0",
+      "purl": "pkg:cargo/synthetic-cargo-provider-consumer@0.8.0",
+      "requested_spec": "^0.8",
+      "expected_decision": "ASK",
+      "expected_confidence": "LOW",
+      "reason_codes": [
+        "REPOSITORY_MAPPING_UNCERTAIN"
+      ],
+      "source_ref_ids": [
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-dependencies",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-features",
+        "crates.io-index-index.crates.io-synthetic-cargo-provider-consumer-0.8.0-checksum"
+      ],
+      "provenance_posture": "offline-normalized-public-fixture"
+    },
+    {
+      "id": "go",
+      "fixture": "fixtures/v0/ask-provider-consumer-go-module.json",
+      "ecosystem": "go",
+      "package": "example.com/provider/consumer",
+      "version": "v0.3.0",
+      "purl": "pkg:golang/example.com/provider/consumer@v0.3.0",
+      "requested_spec": "v0.3.0",
+      "expected_decision": "ASK",
+      "expected_confidence": "LOW",
+      "reason_codes": [
+        "REPOSITORY_MAPPING_UNCERTAIN"
+      ],
+      "source_ref_ids": [
+        "go-module-services-proxy.golang.org-example.com-provider-consumer-v0.3.0",
+        "go-module-services-proxy.golang.org-example.com-provider-consumer",
+        "go-module-services-proxy.golang.org-example.com-provider-consumer-versions",
+        "go-module-services-proxy.golang.org-example.com-provider-consumer-v0.3.0-go.mod"
+      ],
+      "provenance_posture": "offline-normalized-public-fixture"
+    },
+    {
+      "id": "yarn-npm-coordinate",
+      "fixture": "fixtures/v0/ask-provider-consumer-yarn-npm-coordinate.json",
+      "ecosystem": "npm",
+      "package": "@attach-dev/yarn-provider-consumer",
+      "version": "3.2.1",
+      "purl": "pkg:npm/%40attach-dev/yarn-provider-consumer@3.2.1",
+      "requested_spec": "npm:^3.2.0",
+      "expected_decision": "ASK",
+      "expected_confidence": "LOW",
+      "reason_codes": [
+        "REPOSITORY_MAPPING_UNCERTAIN"
+      ],
+      "source_ref_ids": [
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-dist-tags",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1-license",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1-repository"
+      ],
+      "provenance_posture": "offline-normalized-public-fixture"
+    }
+  ]
+}

@@ -144,6 +144,88 @@ func TestProviderConsumerFixturesReplayThroughDeterministicScorer(t *testing.T) 
 	}
 }
 
+type providerConsumerFixtureManifest struct {
+	SchemaVersion string                          `json:"schema_version"`
+	Description   string                          `json:"description"`
+	Entries       []providerConsumerManifestEntry `json:"entries"`
+}
+
+type providerConsumerManifestEntry struct {
+	ID                 string   `json:"id"`
+	Fixture            string   `json:"fixture"`
+	Ecosystem          string   `json:"ecosystem"`
+	Package            string   `json:"package"`
+	Version            string   `json:"version"`
+	PURL               string   `json:"purl"`
+	RequestedSpec      string   `json:"requested_spec"`
+	ExpectedDecision   string   `json:"expected_decision"`
+	ExpectedConfidence string   `json:"expected_confidence"`
+	ReasonCodes        []string `json:"reason_codes"`
+	SourceRefIDs       []string `json:"source_ref_ids"`
+	ProvenancePosture  string   `json:"provenance_posture"`
+}
+
+func TestProviderConsumerFixtureManifestMatchesFixtures(t *testing.T) {
+	manifestPath := filepath.Join("..", "..", "fixtures", "manifests", "provider-consumer-v0.json")
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		t.Fatalf("read manifest: %v", err)
+	}
+	assertNoBlockedProviderConsumerContent(t, string(data))
+
+	var manifest providerConsumerFixtureManifest
+	if err := json.Unmarshal(data, &manifest); err != nil {
+		t.Fatalf("unmarshal manifest: %v", err)
+	}
+	if manifest.SchemaVersion != "provider-consumer-fixture-manifest/v0" {
+		t.Fatalf("schema_version = %q", manifest.SchemaVersion)
+	}
+	if len(manifest.Entries) != len(providerConsumerFixtureCases) {
+		t.Fatalf("manifest entries = %d, want %d", len(manifest.Entries), len(providerConsumerFixtureCases))
+	}
+
+	seen := map[string]bool{}
+	for _, entry := range manifest.Entries {
+		if entry.ID == "" || entry.Fixture == "" || entry.ProvenancePosture != "offline-normalized-public-fixture" {
+			t.Fatalf("manifest entry missing identity/provenance posture: %+v", entry)
+		}
+		if seen[entry.ID] {
+			t.Fatalf("duplicate manifest id %q", entry.ID)
+		}
+		seen[entry.ID] = true
+		if !strings.HasPrefix(entry.Fixture, "fixtures/v0/") || strings.Contains(entry.Fixture, "..") {
+			t.Fatalf("manifest fixture path must stay under fixtures/v0: %q", entry.Fixture)
+		}
+
+		verdict, _ := readProviderConsumerFixture(t, strings.TrimPrefix(entry.Fixture, "fixtures/v0/"))
+		if entry.Ecosystem != verdict.Package.Ecosystem || entry.Package != verdict.Package.Name || entry.Version != verdict.Package.Version || entry.PURL != verdict.Package.PURL || entry.RequestedSpec != verdict.Package.RequestedSpec {
+			t.Fatalf("manifest package identity mismatch for %q", entry.ID)
+		}
+		if entry.ExpectedDecision != string(verdict.Decision) || entry.ExpectedConfidence != string(verdict.Confidence) {
+			t.Fatalf("manifest expected verdict mismatch for %q", entry.ID)
+		}
+		if !reflect.DeepEqual(entry.ReasonCodes, reasonCodes(verdict)) || !reflect.DeepEqual(entry.SourceRefIDs, sourceRefIDs(verdict)) {
+			t.Fatalf("manifest provenance mismatch for %q", entry.ID)
+		}
+	}
+}
+
+func reasonCodes(verdict schema.Verdict) []string {
+	codes := make([]string, 0, len(verdict.Reasons))
+	for _, reason := range verdict.Reasons {
+		codes = append(codes, reason.Code)
+	}
+	return codes
+}
+
+func sourceRefIDs(verdict schema.Verdict) []string {
+	ids := make([]string, 0, len(verdict.SourceRefs))
+	for _, ref := range verdict.SourceRefs {
+		ids = append(ids, ref.ID)
+	}
+	return ids
+}
+
 func readProviderConsumerFixture(t *testing.T, filename string) (schema.Verdict, []byte) {
 	t.Helper()
 	path := filepath.Join("..", "..", "fixtures", "v0", filename)
