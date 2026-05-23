@@ -1,0 +1,134 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "attach-open-score-go/dev",
+  "package": {
+    "ecosystem": "npm",
+    "name": "synthetic-npm-provider-consumer",
+    "version": "1.4.0",
+    "purl": "pkg:npm/synthetic-npm-provider-consumer@1.4.0",
+    "requested_spec": "^1.4.0",
+    "resolved": true,
+    "repository_url": "https://github.com/attach-dev/synthetic-npm-provider-consumer"
+  },
+  "decision": "ASK",
+  "score": 45,
+  "confidence": "LOW",
+  "reasons": [
+    {
+      "code": "REPOSITORY_MAPPING_UNCERTAIN",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "npm public registry metadata for synthetic-npm-provider-consumer@1.4.0 was normalized as non-authoritative package context only.",
+      "source_ref_ids": [
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-dist-tags",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0-license",
+        "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0-repository"
+      ],
+      "details": {
+        "source": "npm-registry",
+        "ecosystem": "npm",
+        "package_name": "synthetic-npm-provider-consumer",
+        "version": "1.4.0",
+        "purl": "pkg:npm/synthetic-npm-provider-consumer@1.4.0",
+        "selected_version_source": "requested_version",
+        "deprecated": false,
+        "license_metadata_status": "reported_by_npm_registry",
+        "repository_mapping_status": "reported_by_npm_registry",
+        "request_posture": "fixture_first_documented_registry_metadata_only_no_live_calls_no_website_crawling_no_audit_security_data",
+        "terms_url": "https://docs.npmjs.com/policies/terms/",
+        "retrieved_at": "2026-05-20T12:00:00Z",
+        "ttl_seconds": 86400,
+        "redistribution": "unknown",
+        "public_display": "allowed",
+        "latest_dist_tag": "1.4.0",
+        "dist_tags": {
+          "latest": "1.4.0"
+        },
+        "dist_tags_status": "reported_by_npm_registry_mutable",
+        "package_created_at": "2026-05-18T09:00:00Z",
+        "package_modified_at": "2026-05-20T10:00:00Z",
+        "version_published_at": "2026-05-20T10:00:00Z",
+        "license": "Apache-2.0",
+        "repository_url": "https://github.com/attach-dev/synthetic-npm-provider-consumer"
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/synthetic-npm-provider-consumer@1.4.0",
+      "url": "https://registry.npmjs.org/synthetic-npm-provider-consumer/1.4.0",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry version metadata from registry.npmjs.org; preserve package name, version, registry URL, retrieval time, and attribution. Do not imply npm endorsement.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/synthetic-npm-provider-consumer",
+      "url": "https://registry.npmjs.org/synthetic-npm-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry packument metadata from registry.npmjs.org; mutable package-level metadata such as dist-tags should be refreshed before relying on it. Do not imply npm endorsement.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-dist-tags",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/synthetic-npm-provider-consumer#dist-tags",
+      "url": "https://registry.npmjs.org/synthetic-npm-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry dist-tags metadata from registry.npmjs.org; dist-tags are mutable and should use a short TTL.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0-license",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/synthetic-npm-provider-consumer@1.4.0#license",
+      "url": "https://registry.npmjs.org/synthetic-npm-provider-consumer/1.4.0",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry package metadata license field from registry.npmjs.org; license strings are publisher-provided metadata.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-synthetic-npm-provider-consumer-1.4.0-repository",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/synthetic-npm-provider-consumer@1.4.0#repository",
+      "url": "https://registry.npmjs.org/synthetic-npm-provider-consumer/1.4.0",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry package metadata repository field from registry.npmjs.org; repository mapping is non-authoritative.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-20T12:00:00Z",
+  "ttl_seconds": 86400,
+  "limitations": [
+    "Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
+    "Synthetic provider-consumer fixture; not a real package evaluation.",
+    "Synthetic local adapter inputs only; no live registry, package artifact, repository clone, or hosted cache lookup was performed.",
+    "Registry metadata source refs preserve attribution and terms posture; redistribution remains unknown for upstream-derived source families."
+  ]
+}

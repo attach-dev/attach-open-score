@@ -1,0 +1,136 @@
+{
+  "schema_version": "attach-open-score/v0",
+  "policy_profile": "local-dev-default",
+  "engine_version": "attach-open-score-go/dev",
+  "package": {
+    "ecosystem": "npm",
+    "name": "@attach-dev/yarn-provider-consumer",
+    "version": "3.2.1",
+    "purl": "pkg:npm/%40attach-dev/yarn-provider-consumer@3.2.1",
+    "requested_spec": "npm:^3.2.0",
+    "resolved": true,
+    "repository_url": "https://github.com/attach-dev/yarn-provider-consumer"
+  },
+  "decision": "ASK",
+  "score": 45,
+  "confidence": "LOW",
+  "reasons": [
+    {
+      "code": "REPOSITORY_MAPPING_UNCERTAIN",
+      "severity": "MEDIUM",
+      "decision_effect": "UNKNOWN",
+      "message": "npm public registry metadata for @attach-dev/yarn-provider-consumer@3.2.1 was normalized as non-authoritative package context only for a Yarn consumer coordinate.",
+      "source_ref_ids": [
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-dist-tags",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1-license",
+        "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1-repository"
+      ],
+      "details": {
+        "source": "npm-registry",
+        "ecosystem": "npm",
+        "consumer_package_manager": "yarn",
+        "coordinate_format": "yarn-consumer-npm-protocol",
+        "package_name": "@attach-dev/yarn-provider-consumer",
+        "version": "3.2.1",
+        "purl": "pkg:npm/%40attach-dev/yarn-provider-consumer@3.2.1",
+        "selected_version_source": "requested_version",
+        "deprecated": false,
+        "license_metadata_status": "reported_by_npm_registry",
+        "repository_mapping_status": "reported_by_npm_registry",
+        "request_posture": "fixture_first_documented_registry_metadata_only_no_live_calls_no_website_crawling_no_audit_security_data",
+        "terms_url": "https://docs.npmjs.com/policies/terms/",
+        "retrieved_at": "2026-05-20T12:00:00Z",
+        "ttl_seconds": 86400,
+        "redistribution": "unknown",
+        "public_display": "allowed",
+        "latest_dist_tag": "3.2.1",
+        "dist_tags": {
+          "latest": "3.2.1"
+        },
+        "dist_tags_status": "reported_by_npm_registry_mutable",
+        "package_created_at": "2026-05-17T08:00:00Z",
+        "package_modified_at": "2026-05-20T11:00:00Z",
+        "version_published_at": "2026-05-20T11:00:00Z",
+        "license": "Apache-2.0",
+        "repository_url": "https://github.com/attach-dev/yarn-provider-consumer"
+      }
+    }
+  ],
+  "source_refs": [
+    {
+      "id": "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/@attach-dev/yarn-provider-consumer@3.2.1",
+      "url": "https://registry.npmjs.org/%40attach-dev%2Fyarn-provider-consumer/3.2.1",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry version metadata from registry.npmjs.org; preserve package name, version, registry URL, retrieval time, and attribution. Do not imply npm endorsement.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/@attach-dev/yarn-provider-consumer",
+      "url": "https://registry.npmjs.org/%40attach-dev%2Fyarn-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry packument metadata from registry.npmjs.org; mutable package-level metadata such as dist-tags should be refreshed before relying on it. Do not imply npm endorsement.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-dist-tags",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/@attach-dev/yarn-provider-consumer#dist-tags",
+      "url": "https://registry.npmjs.org/%40attach-dev%2Fyarn-provider-consumer",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry dist-tags metadata from registry.npmjs.org; dist-tags are mutable and should use a short TTL.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1-license",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/@attach-dev/yarn-provider-consumer@3.2.1#license",
+      "url": "https://registry.npmjs.org/%40attach-dev%2Fyarn-provider-consumer/3.2.1",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry package metadata license field from registry.npmjs.org; license strings are publisher-provided metadata.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    },
+    {
+      "id": "npm-registry-registry.npmjs.org-attach-dev-yarn-provider-consumer-3.2.1-repository",
+      "source": "npm-registry",
+      "source_id": "registry.npmjs.org/@attach-dev/yarn-provider-consumer@3.2.1#repository",
+      "url": "https://registry.npmjs.org/%40attach-dev%2Fyarn-provider-consumer/3.2.1",
+      "retrieved_at": "2026-05-20T12:00:00Z",
+      "ttl_seconds": 86400,
+      "license_or_terms_url": "https://docs.npmjs.com/policies/terms/",
+      "attribution": "Source: npm public registry package metadata repository field from registry.npmjs.org; repository mapping is non-authoritative.",
+      "attribution_required": true,
+      "redistribution": "unknown",
+      "public_display": "allowed"
+    }
+  ],
+  "evaluated_at": "2026-05-20T12:00:00Z",
+  "ttl_seconds": 86400,
+  "limitations": [
+    "Offline deterministic scorer skeleton; network adapters and live source lookups are not included.",
+    "Synthetic provider-consumer fixture; not a real package evaluation.",
+    "Yarn consumer context is represented only as npm package coordinates; no Yarn lockfile, private manifest, package artifact, repository clone, or hosted cache lookup was performed.",
+    "npm registry metadata source refs preserve attribution and terms posture; redistribution remains unknown for upstream-derived source families."
+  ]
+}
