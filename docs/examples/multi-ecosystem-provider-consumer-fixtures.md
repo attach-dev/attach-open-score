@@ -34,3 +34,7 @@ All five examples use `REPOSITORY_MAPPING_UNCERTAIN` with `decision_effect: "UNK
 - The Yarn fixture is still an npm ecosystem verdict because Yarn consumes npm package coordinates; it does not add a Yarn source adapter or lockfile data model.
 
 These fixtures are suitable for offline schema/consumer testing and documentation examples. They should not be used as proof that a real package is safe.
+
+## Machine-readable manifest
+
+The same fixture set is indexed in `fixtures/manifests/provider-consumer-v0.json`. Provider consumers can read that manifest to discover fixture paths, package coordinates, expected decisions, reason codes, and source reference IDs without scraping this prose document. The manifest is offline fixture metadata only; it is not a hosted/default provider contract and does not contain live upstream records.
