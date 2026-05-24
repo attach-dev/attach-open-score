@@ -36,7 +36,90 @@ func runE(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	if len(args) > 0 && args[0] == "score-bundle" {
 		return runScoreBundle(args[1:], stdin, stdout, stderr)
 	}
+	if len(args) > 0 && args[0] == "fixtures" {
+		return runFixtures(args[1:], stdout, stderr)
+	}
 	return runFixtureValidation(args, stdout, stderr)
+}
+
+func runFixtures(args []string, stdout, stderr io.Writer) error {
+	if len(args) == 0 {
+		return fmt.Errorf("fixtures requires a subcommand: manifest")
+	}
+	switch args[0] {
+	case "manifest":
+		return runFixturesManifest(args[1:], stdout, stderr)
+	default:
+		return fmt.Errorf("unknown fixtures subcommand %q", args[0])
+	}
+}
+
+func runFixturesManifest(args []string, stdout, stderr io.Writer) error {
+	flags := flag.NewFlagSet("attach-open-score fixtures manifest", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	root := flags.String("root", ".", "repository root containing fixtures/")
+	input := flags.String("input", "", "provider-consumer fixture manifest JSON path")
+	format := flags.String("format", "human", "output format: human or json")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() > 0 {
+		return fmt.Errorf("fixtures manifest does not accept positional arguments: %v", flags.Args())
+	}
+	if *input == "" {
+		return fmt.Errorf("fixtures manifest requires --input <path>")
+	}
+
+	manifest, err := fixtures.LoadProviderConsumerManifest(*root, *input)
+	if err != nil {
+		return err
+	}
+
+	switch *format {
+	case "human":
+		return printProviderConsumerManifestSummary(stdout, manifest)
+	case "json":
+		encoded, err := json.MarshalIndent(manifest, "", "  ")
+		if err != nil {
+			return err
+		}
+		if _, err := stdout.Write(encoded); err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(stdout)
+		return err
+	default:
+		return fmt.Errorf("fixtures manifest --format must be human or json; got %q", *format)
+	}
+}
+
+func printProviderConsumerManifestSummary(stdout io.Writer, manifest fixtures.ProviderConsumerManifest) error {
+	if _, err := fmt.Fprintf(stdout, "%s entries=%d\n", manifest.SchemaVersion, len(manifest.Entries)); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(stdout, "offline fixture metadata only; not a hosted/default provider contract"); err != nil {
+		return err
+	}
+	for _, entry := range manifest.Entries {
+		if _, err := fmt.Fprintf(
+			stdout,
+			"%s %s %s %s %s@%s requested_spec=%q fixture=%s reasons=%s source_refs=%d posture=%s\n",
+			entry.ID,
+			entry.ExpectedDecision,
+			entry.ExpectedConfidence,
+			entry.Ecosystem,
+			entry.Package,
+			entry.Version,
+			entry.RequestedSpec,
+			entry.Fixture,
+			strings.Join(entry.ReasonCodes, ","),
+			len(entry.SourceRefIDs),
+			entry.ProvenancePosture,
+		); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func runFixtureValidation(args []string, stdout, stderr io.Writer) error {

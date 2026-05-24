@@ -541,6 +541,92 @@ func TestDefaultCommandStillValidatesFixtures(t *testing.T) {
 	}
 }
 
+func TestFixturesManifestCommandSummarizesProviderConsumerManifest(t *testing.T) {
+	path := filepath.Join("..", "..", "fixtures", "manifests", "provider-consumer-v0.json")
+
+	code, stdout, stderr := runCommand(t, []string{"fixtures", "manifest", "--root", filepath.Join("..", ".."), "--input", path}, "")
+	if code != 0 {
+		t.Fatalf("run exited %d, stderr: %s", code, stderr)
+	}
+	if stderr != "" {
+		t.Fatalf("stderr = %q, want empty", stderr)
+	}
+	if !strings.HasPrefix(stdout, "provider-consumer-fixture-manifest/v0 entries=5\n") {
+		t.Fatalf("stdout = %q, want manifest summary header", stdout)
+	}
+	if !strings.Contains(stdout, "offline fixture metadata only; not a hosted/default provider contract\n") {
+		t.Fatalf("stdout = %q, want offline contract disclaimer", stdout)
+	}
+	if !strings.Contains(stdout, "npm ASK LOW npm synthetic-npm-provider-consumer@1.4.0 requested_spec=\"^1.4.0\" fixture=fixtures/v0/ask-provider-consumer-npm.json reasons=REPOSITORY_MAPPING_UNCERTAIN source_refs=5 posture=offline-normalized-public-fixture\n") {
+		t.Fatalf("stdout = %q, want npm manifest entry summary", stdout)
+	}
+	if !strings.Contains(stdout, "yarn-npm-coordinate ASK LOW npm @attach-dev/yarn-provider-consumer@3.2.1 requested_spec=\"npm:^3.2.0\" fixture=fixtures/v0/ask-provider-consumer-yarn-npm-coordinate.json reasons=REPOSITORY_MAPPING_UNCERTAIN source_refs=5 posture=offline-normalized-public-fixture\n") {
+		t.Fatalf("stdout = %q, want yarn manifest entry summary", stdout)
+	}
+}
+
+func TestFixturesManifestCommandOutputsJSON(t *testing.T) {
+	path := filepath.Join("..", "..", "fixtures", "manifests", "provider-consumer-v0.json")
+
+	code, stdout, stderr := runCommand(t, []string{"fixtures", "manifest", "--root", filepath.Join("..", ".."), "--input", path, "--format", "json"}, "")
+	if code != 0 {
+		t.Fatalf("run exited %d, stderr: %s", code, stderr)
+	}
+	if stderr != "" {
+		t.Fatalf("stderr = %q, want empty", stderr)
+	}
+
+	var manifest struct {
+		SchemaVersion string `json:"schema_version"`
+		Entries       []struct {
+			ID               string          `json:"id"`
+			ExpectedDecision schema.Decision `json:"expected_decision"`
+		} `json:"entries"`
+	}
+	if err := json.Unmarshal([]byte(stdout), &manifest); err != nil {
+		t.Fatalf("stdout did not contain a JSON manifest: %v\n%s", err, stdout)
+	}
+	if manifest.SchemaVersion != "provider-consumer-fixture-manifest/v0" || len(manifest.Entries) != 5 || manifest.Entries[0].ID != "npm" || manifest.Entries[0].ExpectedDecision != schema.DecisionAsk {
+		t.Fatalf("manifest JSON = %#v, want validated provider-consumer manifest", manifest)
+	}
+}
+
+func TestFixturesManifestCommandUsesRootForReferencedFixturesOnly(t *testing.T) {
+	root := filepath.Join("..", "..")
+	data, err := os.ReadFile(filepath.Join(root, "fixtures", "manifests", "provider-consumer-v0.json"))
+	if err != nil {
+		t.Fatalf("read provider-consumer manifest: %v", err)
+	}
+	input := filepath.Join(t.TempDir(), "provider-consumer-v0.json")
+	if err := os.WriteFile(input, data, 0o600); err != nil {
+		t.Fatalf("write copied provider-consumer manifest: %v", err)
+	}
+
+	code, stdout, stderr := runCommand(t, []string{"fixtures", "manifest", "--root", root, "--input", input}, "")
+	if code != 0 {
+		t.Fatalf("run exited %d, stderr: %s", code, stderr)
+	}
+	if stderr != "" {
+		t.Fatalf("stderr = %q, want empty", stderr)
+	}
+	if !strings.HasPrefix(stdout, "provider-consumer-fixture-manifest/v0 entries=5\n") {
+		t.Fatalf("stdout = %q, want manifest summary header", stdout)
+	}
+}
+
+func TestFixturesManifestCommandRejectsMissingInput(t *testing.T) {
+	code, stdout, stderr := runCommand(t, []string{"fixtures", "manifest"}, "")
+	if code != 1 {
+		t.Fatalf("run exited %d, want 1", code)
+	}
+	if stdout != "" {
+		t.Fatalf("stdout = %q, want empty", stdout)
+	}
+	if !strings.Contains(stderr, "fixtures manifest requires --input") {
+		t.Fatalf("stderr = %q, want missing input error", stderr)
+	}
+}
+
 func runCommand(t *testing.T, args []string, stdin string) (int, string, string) {
 	t.Helper()
 	var stdout bytes.Buffer
