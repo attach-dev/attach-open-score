@@ -22,10 +22,12 @@ Initial tooling:
 ```bash
 go test ./...
 go run ./cmd/attach-open-score --root .
+go run ./cmd/attach-open-score fixtures manifest --input fixtures/manifests/provider-consumer-v0.json
 go run ./cmd/attach-open-score score --input request.json
 ```
 
 - `fixtures/v0/` — synthetic public-safe example verdicts, including multi-ecosystem provider-consumer coordinates.
+- `fixtures manifest --input fixtures/manifests/provider-consumer-v0.json` validates and summarizes offline provider-consumer fixture metadata. It is not a hosted/default provider contract and does not fetch live source data.
 - `score --input` evaluates a local, offline v0 request JSON. The request shape is intentionally separate from fixture verdict JSON:
   - top-level `package` is required and uses the package identity fields from `docs/SCORE_SCHEMA.md`;
   - top-level `evidence` is required for CLI scoring and must contain one or more normalized evidence items;

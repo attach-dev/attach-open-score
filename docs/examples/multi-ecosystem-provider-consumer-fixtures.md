@@ -9,6 +9,7 @@ Validate them locally from the repository root:
 
 ```bash
 go run ./cmd/attach-open-score --root .
+go run ./cmd/attach-open-score fixtures manifest --input fixtures/manifests/provider-consumer-v0.json
 go test ./...
 ```
 
@@ -38,3 +39,5 @@ These fixtures are suitable for offline schema/consumer testing and documentatio
 ## Machine-readable manifest
 
 The same fixture set is indexed in `fixtures/manifests/provider-consumer-v0.json`. Provider consumers can read that manifest to discover fixture paths, package coordinates, expected decisions, reason codes, and source reference IDs without scraping this prose document. The manifest is offline fixture metadata only; it is not a hosted/default provider contract and does not contain live upstream records.
+
+Use `go run ./cmd/attach-open-score fixtures manifest --input fixtures/manifests/provider-consumer-v0.json` to validate the manifest and print a deterministic summary. Add `--format json` to print the validated manifest JSON.
