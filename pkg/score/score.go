@@ -278,6 +278,7 @@ func defaultDecisionEffect(code string) (schema.DecisionEffect, bool) {
 		reasons.RepositoryMappingUncertain:
 		return schema.DecisionEffectUnknown, true
 	case reasons.NoKnownVulnerabilities,
+		reasons.NoSuspiciousArtifactSignals,
 		reasons.MaintainerActivityLow,
 		reasons.ReleaseRecencyFresh,
 		reasons.ReleaseRecencyNearStale:
@@ -302,6 +303,7 @@ func requiresSourceRef(code string) bool {
 		reasons.SuspiciousInstallScript,
 		reasons.SuspiciousBinaryArtifact,
 		reasons.ArtifactDigestMismatch,
+		reasons.NoSuspiciousArtifactSignals,
 		reasons.PossibleTyposquat,
 		reasons.DependencyConfusionRisk,
 		reasons.LowRepositoryHealth,
