@@ -1,0 +1,40 @@
+{
+  "package": {
+    "ecosystem": "npm",
+    "name": "synthetic-provider-outage",
+    "version": "1.0.0",
+    "purl": "pkg:npm/synthetic-provider-outage@1.0.0",
+    "requested_spec": "^1.0.0",
+    "resolved": true
+  },
+  "evidence": [
+    {
+      "reason": {
+        "code": "SOURCE_UNAVAILABLE",
+        "severity": "MEDIUM",
+        "decision_effect": "UNKNOWN",
+        "message": "Synthetic fixture: the provider needed for the policy check was unavailable.",
+        "source_ref_ids": [
+          "synthetic-provider-status"
+        ],
+        "details": {
+          "fixture": "policy-profile-local-vs-ci",
+          "source": "synthetic-provider-status"
+        }
+      },
+      "source_ref": {
+        "id": "synthetic-provider-status",
+        "source": "synthetic-provider-status",
+        "source_id": "provider-unavailable",
+        "url": "fixture://attach-open-score/policy-profiles/provider-unavailable",
+        "retrieved_at": "2026-05-06T11:50:00Z",
+        "ttl_seconds": 300,
+        "license_or_terms_url": "fixture://attach-open-score/terms",
+        "attribution": "Synthetic provider status fixture; not real upstream data.",
+        "attribution_required": false,
+        "redistribution": "allowed",
+        "public_display": "allowed"
+      }
+    }
+  ]
+}
