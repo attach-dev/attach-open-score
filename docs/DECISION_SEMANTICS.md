@@ -122,3 +122,5 @@ Downstream tools may support overrides, but overrides must be outside the scorin
 ## Provider unavailability
 
 Provider/network failures are not evidence of safety or danger. Represent them with reasons such as `SOURCE_UNAVAILABLE` and lower confidence. Local default maps this to ASK/UNKNOWN; CI profiles may fail.
+
+Offline request fixtures under `fixtures/policy-profiles/` exercise the local-vs-CI profile boundary for ASK and UNKNOWN evidence without changing scorer semantics or fetching live source data.

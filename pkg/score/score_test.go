@@ -2,6 +2,9 @@ package score
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +16,12 @@ import (
 )
 
 var fixedNow = time.Date(2026, 5, 6, 11, 50, 0, 0, time.UTC)
+
+type profileFixtureExpectation struct {
+	decision   schema.Decision
+	score      *int
+	confidence schema.Confidence
+}
 
 func TestEvaluateDeniesCriticalReasonAndEmitsSchemaValidVerdict(t *testing.T) {
 	engine := mustEngine(t, Options{Now: func() time.Time { return fixedNow }})
@@ -285,6 +294,52 @@ func TestEvaluatePreservesUnknownForSourceUnavailable(t *testing.T) {
 		t.Fatalf("ci decision = %s, want DENY", ciVerdict.Decision)
 	}
 	assertSchemaValid(t, ciVerdict)
+}
+
+func TestPolicyProfileFixturesLocalVsCISemantics(t *testing.T) {
+	cases := []struct {
+		name         string
+		fixture      string
+		reasonCode   string
+		reasonEffect schema.DecisionEffect
+		local        profileFixtureExpectation
+		ci           profileFixtureExpectation
+	}{
+		{
+			name:         "provider unavailable remains evidence uncertainty",
+			fixture:      "unknown-source-unavailable.request.json",
+			reasonCode:   reasons.SourceUnavailable,
+			reasonEffect: schema.DecisionEffectUnknown,
+			local:        profileFixtureExpectation{decision: schema.DecisionAsk, score: ptr(45), confidence: schema.ConfidenceLow},
+			ci:           profileFixtureExpectation{decision: schema.DecisionDeny, score: nil, confidence: schema.ConfidenceLow},
+		},
+		{
+			name:         "install script ask becomes CI failure",
+			fixture:      "install-script-ask.request.json",
+			reasonCode:   reasons.InstallScriptPresent,
+			reasonEffect: schema.DecisionEffectAsk,
+			local:        profileFixtureExpectation{decision: schema.DecisionAsk, score: ptr(45), confidence: schema.ConfidenceMedium},
+			ci:           profileFixtureExpectation{decision: schema.DecisionDeny, score: ptr(45), confidence: schema.ConfidenceMedium},
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			request := loadPolicyProfileRequestFixture(t, tt.fixture)
+
+			localVerdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }}).Evaluate(request)
+			if err != nil {
+				t.Fatalf("local Evaluate returned error: %v", err)
+			}
+			assertPolicyProfileFixtureVerdict(t, localVerdict, request, ProfileLocalDevDefault, tt.reasonCode, tt.reasonEffect, tt.local.decision, tt.local.score, tt.local.confidence)
+
+			ciVerdict, err := mustEngine(t, Options{Now: func() time.Time { return fixedNow }, PolicyProfile: ProfileCIStrict}).Evaluate(request)
+			if err != nil {
+				t.Fatalf("ci Evaluate returned error: %v", err)
+			}
+			assertPolicyProfileFixtureVerdict(t, ciVerdict, request, ProfileCIStrict, tt.reasonCode, tt.reasonEffect, tt.ci.decision, tt.ci.score, tt.ci.confidence)
+		})
+	}
 }
 
 func TestEvaluateCapsAskScoreBandEvenWithCallerSuppliedCriticalSeverity(t *testing.T) {
@@ -598,6 +653,85 @@ func assertSchemaValid(t *testing.T, verdict schema.Verdict) {
 	if _, err := fixtures.ValidateBytes("generated-verdict.json", data); err != nil {
 		t.Fatalf("generated verdict failed fixture validation: %v\n%s", err, string(data))
 	}
+}
+
+func loadPolicyProfileRequestFixture(t *testing.T, filename string) Request {
+	t.Helper()
+	path := filepath.Join("..", "..", "fixtures", "policy-profiles", filename)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read policy profile fixture %s: %v", path, err)
+	}
+	var request Request
+	if err := json.Unmarshal(data, &request); err != nil {
+		t.Fatalf("unmarshal policy profile fixture %s: %v", path, err)
+	}
+	return request
+}
+
+func assertPolicyProfileFixtureVerdict(
+	t *testing.T,
+	verdict schema.Verdict,
+	request Request,
+	profile string,
+	reasonCode string,
+	reasonEffect schema.DecisionEffect,
+	decision schema.Decision,
+	score *int,
+	confidence schema.Confidence,
+) {
+	t.Helper()
+	if verdict.PolicyProfile != profile {
+		t.Fatalf("policy_profile = %q, want %q", verdict.PolicyProfile, profile)
+	}
+	if verdict.Decision != decision {
+		t.Fatalf("%s decision = %s, want %s", profile, verdict.Decision, decision)
+	}
+	if !sameScore(verdict.Score, score) {
+		t.Fatalf("%s score = %v, want %v", profile, verdict.Score, score)
+	}
+	if verdict.Confidence != confidence {
+		t.Fatalf("%s confidence = %s, want %s", profile, verdict.Confidence, confidence)
+	}
+	if len(verdict.Reasons) != 1 {
+		t.Fatalf("%s reasons length = %d, want 1", profile, len(verdict.Reasons))
+	}
+	if verdict.Reasons[0].Code != reasonCode || verdict.Reasons[0].DecisionEffect != reasonEffect {
+		t.Fatalf("%s reason = %#v, want code %s effect %s", profile, verdict.Reasons[0], reasonCode, reasonEffect)
+	}
+	if !reflect.DeepEqual(verdict.Reasons, requestEvidenceReasons(request.Evidence)) {
+		t.Fatalf("%s reasons changed from fixture evidence\n got: %#v\nwant: %#v", profile, verdict.Reasons, requestEvidenceReasons(request.Evidence))
+	}
+	if !reflect.DeepEqual(verdict.SourceRefs, requestEvidenceSourceRefs(request.Evidence)) {
+		t.Fatalf("%s source_refs changed from fixture evidence\n got: %#v\nwant: %#v", profile, verdict.SourceRefs, requestEvidenceSourceRefs(request.Evidence))
+	}
+	assertSchemaValid(t, verdict)
+}
+
+func sameScore(got, want *int) bool {
+	if got == nil || want == nil {
+		return got == nil && want == nil
+	}
+	return *got == *want
+}
+
+func requestEvidenceReasons(evidence []Evidence) []schema.Reason {
+	reasonList := make([]schema.Reason, 0, len(evidence))
+	for _, item := range evidence {
+		reasonList = append(reasonList, item.Reason)
+	}
+	return reasonList
+}
+
+func requestEvidenceSourceRefs(evidence []Evidence) []schema.SourceRef {
+	sourceRefs := make([]schema.SourceRef, 0, len(evidence))
+	for _, item := range evidence {
+		if item.SourceRef != nil {
+			sourceRefs = append(sourceRefs, *item.SourceRef)
+		}
+		sourceRefs = append(sourceRefs, item.SourceRefs...)
+	}
+	return sourceRefs
 }
 
 func testPackage() schema.PackageIdentity {

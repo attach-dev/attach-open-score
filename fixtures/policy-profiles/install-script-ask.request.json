@@ -1,0 +1,40 @@
+{
+  "package": {
+    "ecosystem": "npm",
+    "name": "synthetic-install-script",
+    "version": "1.0.0",
+    "purl": "pkg:npm/synthetic-install-script@1.0.0",
+    "requested_spec": "^1.0.0",
+    "resolved": true
+  },
+  "evidence": [
+    {
+      "reason": {
+        "code": "INSTALL_SCRIPT_PRESENT",
+        "severity": "MEDIUM",
+        "decision_effect": "ASK",
+        "message": "Synthetic fixture: package metadata declares an install lifecycle script.",
+        "source_ref_ids": [
+          "synthetic-package-metadata"
+        ],
+        "details": {
+          "fixture": "policy-profile-local-vs-ci",
+          "script": "install"
+        }
+      },
+      "source_ref": {
+        "id": "synthetic-package-metadata",
+        "source": "synthetic-package-metadata",
+        "source_id": "synthetic-install-script@1.0.0",
+        "url": "fixture://attach-open-score/policy-profiles/install-script-metadata",
+        "retrieved_at": "2026-05-06T11:50:00Z",
+        "ttl_seconds": 86400,
+        "license_or_terms_url": "fixture://attach-open-score/terms",
+        "attribution": "Synthetic package metadata fixture; no real package contents redistributed.",
+        "attribution_required": false,
+        "redistribution": "allowed",
+        "public_display": "allowed"
+      }
+    }
+  ]
+}
