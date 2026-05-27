@@ -270,6 +270,6 @@ Non-goals for v0:
 
 ## Status
 
-Public v0 method in active development. The source policy, schema, fixtures, deterministic scoring, adapter foundations, provider-consumer manifests, npm artifact analyzer, and policy-profile fixtures should stay reviewed together.
+Public v0 method implemented for the current scope. The source policy, schema, fixtures, deterministic scoring, adapter foundations, provider-consumer manifests, npm artifact analyzer, and policy-profile fixtures are all present and should continue to be reviewed together as the method evolves.
 
-This repo still does not ship a hosted/default provider, live registry polling, proprietary score ingestion, or raw upstream dataset redistribution.
+Future work should be treated as post-v0 expansion or a newly selected wedge, not unfinished v0 baseline work. This repo still does not ship a hosted/default provider, live registry polling, proprietary score ingestion, or raw upstream dataset redistribution.
