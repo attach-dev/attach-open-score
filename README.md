@@ -24,10 +24,12 @@ go test ./...
 go run ./cmd/attach-open-score --root .
 go run ./cmd/attach-open-score fixtures manifest --input fixtures/manifests/provider-consumer-v0.json
 go run ./cmd/attach-open-score score --input request.json
+go run ./cmd/attach-open-score npm-artifact --input package.tgz --package synthetic-package --version 1.0.0
 ```
 
 - `fixtures/v0/` — synthetic public-safe example verdicts, including multi-ecosystem provider-consumer coordinates.
 - `fixtures manifest --input fixtures/manifests/provider-consumer-v0.json` validates and summarizes offline provider-consumer fixture metadata. It is not a hosted/default provider contract and does not fetch live source data.
+- `npm-artifact --input` analyzes one local npm tarball for an attempted install and scores deterministic artifact evidence. It does not monitor the npm firehose, execute package scripts, install dependencies, run a dynamic sandbox, or call an AI/model in the enforcement path.
 - `score --input` evaluates a local, offline v0 request JSON. The request shape is intentionally separate from fixture verdict JSON:
   - top-level `package` is required and uses the package identity fields from `docs/SCORE_SCHEMA.md`;
   - top-level `evidence` is required for CLI scoring and must contain one or more normalized evidence items;
@@ -73,5 +75,8 @@ Minimal local request example:
 }
 ```
 
-Status: draft public spec with a first OSV adapter. Source policy, schema,
-fixtures, and adapter behavior must stay reviewed together.
+Status: public v0 method in active development. Source policy, schema,
+fixtures, deterministic scoring, offline source-adapter foundations, provider-consumer
+fixture manifests, and policy-profile fixtures must stay reviewed together. The
+repo still does not ship a hosted/default provider, live registry polling, or raw
+upstream dataset redistribution.

@@ -15,6 +15,7 @@ import (
 	"github.com/attach-dev/attach-open-score/pkg/schema"
 	"github.com/attach-dev/attach-open-score/pkg/score"
 	"github.com/attach-dev/attach-open-score/pkg/sources/compose"
+	"github.com/attach-dev/attach-open-score/pkg/sources/npmartifact"
 )
 
 func main() {
@@ -35,6 +36,9 @@ func runE(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	}
 	if len(args) > 0 && args[0] == "score-bundle" {
 		return runScoreBundle(args[1:], stdin, stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "npm-artifact" {
+		return runNPMArtifact(args[1:], stdout, stderr)
 	}
 	if len(args) > 0 && args[0] == "fixtures" {
 		return runFixtures(args[1:], stdout, stderr)
@@ -224,6 +228,66 @@ func runScoreBundle(args []string, stdin io.Reader, stdout, stderr io.Writer) er
 	}
 
 	verdict, err := engine.Evaluate(request)
+	if err != nil {
+		return err
+	}
+
+	encoded, err := json.MarshalIndent(verdict, "", "  ")
+	if err != nil {
+		return err
+	}
+	if _, err := stdout.Write(encoded); err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(stdout)
+	return err
+}
+
+func runNPMArtifact(args []string, stdout, stderr io.Writer) error {
+	flags := flag.NewFlagSet("attach-open-score npm-artifact", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	input := flags.String("input", "", "npm package tarball path")
+	name := flags.String("package", "", "npm package name")
+	version := flags.String("version", "", "npm package version")
+	purl := flags.String("purl", "", "package URL; defaults from package/version")
+	previous := flags.String("previous-package-json", "", "optional previous package.json path for dependency/script deltas")
+	publishedAt := flags.String("published-at", "", "optional npm publish timestamp in RFC3339")
+	profile := flags.String("policy-profile", "default", "policy profile: default, local-dev-default, ci-strict, or audit-only")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() > 0 {
+		return fmt.Errorf("npm-artifact does not accept positional arguments: %v", flags.Args())
+	}
+	if *input == "" {
+		return fmt.Errorf("npm-artifact requires --input <path>")
+	}
+
+	previousManifest, err := npmartifact.LoadPreviousManifest(*previous)
+	if err != nil {
+		return fmt.Errorf("read previous package.json: %w", err)
+	}
+
+	analyzer, err := npmartifact.NewAnalyzer(npmartifact.Options{})
+	if err != nil {
+		return err
+	}
+	result, err := analyzer.AnalyzeTarball(*input, schema.PackageIdentity{
+		Ecosystem: "npm",
+		Name:      *name,
+		Version:   *version,
+		PURL:      *purl,
+		Resolved:  true,
+	}, previousManifest, *publishedAt)
+	if err != nil {
+		return err
+	}
+
+	engine, err := newScoreEngine(*profile)
+	if err != nil {
+		return err
+	}
+	verdict, err := engine.Evaluate(schema.Request{Package: result.Package, Evidence: result.Evidence})
 	if err != nil {
 		return err
 	}

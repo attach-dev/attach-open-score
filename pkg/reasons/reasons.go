@@ -12,10 +12,11 @@ const (
 	PackageUnpublishedOrYanked = "PACKAGE_UNPUBLISHED_OR_YANKED"
 	DeprecatedPackage          = "DEPRECATED_PACKAGE"
 
-	InstallScriptPresent     = "INSTALL_SCRIPT_PRESENT"
-	SuspiciousInstallScript  = "SUSPICIOUS_INSTALL_SCRIPT"
-	SuspiciousBinaryArtifact = "SUSPICIOUS_BINARY_ARTIFACT"
-	ArtifactDigestMismatch   = "ARTIFACT_DIGEST_MISMATCH"
+	InstallScriptPresent        = "INSTALL_SCRIPT_PRESENT"
+	SuspiciousInstallScript     = "SUSPICIOUS_INSTALL_SCRIPT"
+	SuspiciousBinaryArtifact    = "SUSPICIOUS_BINARY_ARTIFACT"
+	ArtifactDigestMismatch      = "ARTIFACT_DIGEST_MISMATCH"
+	NoSuspiciousArtifactSignals = "NO_SUSPICIOUS_ARTIFACT_SIGNALS"
 
 	PossibleTyposquat       = "POSSIBLE_TYPOSQUAT"
 	DependencyConfusionRisk = "DEPENDENCY_CONFUSION_RISK"
@@ -37,34 +38,35 @@ const (
 )
 
 var Known = map[string]struct{}{
-	KnownMaliciousPackage:      {},
-	KnownVulnerabilityCritical: {},
-	KnownVulnerabilityHigh:     {},
-	KnownVulnerabilityModerate: {},
-	NoKnownVulnerabilities:     {},
-	PackageTooNew:              {},
-	VersionTooNew:              {},
-	PackageUnpublishedOrYanked: {},
-	DeprecatedPackage:          {},
-	InstallScriptPresent:       {},
-	SuspiciousInstallScript:    {},
-	SuspiciousBinaryArtifact:   {},
-	ArtifactDigestMismatch:     {},
-	PossibleTyposquat:          {},
-	DependencyConfusionRisk:    {},
-	UnresolvedPackage:          {},
-	UnsupportedEcosystem:       {},
-	LowRepositoryHealth:        {},
-	RepositoryMappingUncertain: {},
-	MaintainerActivityLow:      {},
-	ReleaseRecencyStale:        {},
-	ReleaseRecencyFresh:        {},
-	ReleaseRecencyNearStale:    {},
-	SourceUnavailable:          {},
-	SourceTermsBlocked:         {},
-	SourceStale:                {},
-	InsufficientData:           {},
-	ConflictingSourceData:      {},
+	KnownMaliciousPackage:       {},
+	KnownVulnerabilityCritical:  {},
+	KnownVulnerabilityHigh:      {},
+	KnownVulnerabilityModerate:  {},
+	NoKnownVulnerabilities:      {},
+	PackageTooNew:               {},
+	VersionTooNew:               {},
+	PackageUnpublishedOrYanked:  {},
+	DeprecatedPackage:           {},
+	InstallScriptPresent:        {},
+	SuspiciousInstallScript:     {},
+	SuspiciousBinaryArtifact:    {},
+	ArtifactDigestMismatch:      {},
+	NoSuspiciousArtifactSignals: {},
+	PossibleTyposquat:           {},
+	DependencyConfusionRisk:     {},
+	UnresolvedPackage:           {},
+	UnsupportedEcosystem:        {},
+	LowRepositoryHealth:         {},
+	RepositoryMappingUncertain:  {},
+	MaintainerActivityLow:       {},
+	ReleaseRecencyStale:         {},
+	ReleaseRecencyFresh:         {},
+	ReleaseRecencyNearStale:     {},
+	SourceUnavailable:           {},
+	SourceTermsBlocked:          {},
+	SourceStale:                 {},
+	InsufficientData:            {},
+	ConflictingSourceData:       {},
 }
 
 func IsKnown(code string) bool {

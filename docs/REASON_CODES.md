@@ -52,6 +52,7 @@ GHSA/GitHub Advisory Database adapter note: local GHSA-shaped advisory matches u
 | `SUSPICIOUS_INSTALL_SCRIPT` | HIGH | ASK | Script contains high-risk deterministic markers. |
 | `SUSPICIOUS_BINARY_ARTIFACT` | HIGH | ASK | Package contains unexpected binary or executable artifact. |
 | `ARTIFACT_DIGEST_MISMATCH` | CRITICAL | DENY | Artifact digest does not match expected source/registry metadata. |
+| `NO_SUSPICIOUS_ARTIFACT_SIGNALS` | INFO | NONE | Deterministic artifact analysis found no suspicious install-time artifact signals. |
 
 ### Identity and ecosystem risk
 
