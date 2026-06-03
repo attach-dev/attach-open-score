@@ -1,0 +1,50 @@
+[Unit]
+Description=Attach Open Score verdict API
+Documentation=https://github.com/attach-dev/attach-open-score
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=attach-score
+Group=attach-score
+
+# Token + tunables live in an operator-managed env file (not in the repo).
+# Required: ATTACH_OPEN_SCORE_API_TOKEN=<long-random-secret>
+# Optional: ATTACH_OPEN_SCORE_DB_PATH=/var/lib/attach-open-score/scores.json
+EnvironmentFile=/etc/attach-open-score/score.env
+
+# Bind loopback only; TLS + the public surface are terminated by Caddy.
+ExecStart=/usr/local/bin/attach-open-score serve \
+  --addr 127.0.0.1:8757 \
+  --db /var/lib/attach-open-score/scores.json \
+  --rate-limit 120 \
+  --rate-burst 60
+
+Restart=on-failure
+RestartSec=2
+
+# --- Hardening: minimal privileges and filesystem exposure ---
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+# Only the cache directory is writable.
+ReadWritePaths=/var/lib/attach-open-score
+StateDirectory=attach-open-score
+
+# Resource ceilings as a DoS backstop in addition to app-level rate limiting.
+LimitNOFILE=4096
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

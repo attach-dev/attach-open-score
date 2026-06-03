@@ -362,6 +362,9 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 	flags.SetOutput(stderr)
 	addr := flags.String("addr", "127.0.0.1:8757", "HTTP listen address")
 	dbPath := flags.String("db", "", "score database path; defaults to ATTACH_OPEN_SCORE_DB_PATH or ~/.attach-open-score/scores.json")
+	authToken := flags.String("auth-token", "", "require Authorization: Bearer <token>; defaults to ATTACH_OPEN_SCORE_API_TOKEN. Required to bind a non-loopback address")
+	rateLimit := flags.Int("rate-limit", 120, "max requests per minute per client (0 disables)")
+	rateBurst := flags.Int("rate-burst", 60, "rate-limit burst size")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -369,8 +372,23 @@ func runServe(args []string, stdout, stderr io.Writer) error {
 		return fmt.Errorf("serve does not accept positional arguments: %v", flags.Args())
 	}
 
-	fmt.Fprintf(stdout, "attach-open-score serving on http://%s/v0/verdict\n", *addr)
-	return packageverdict.ListenAndServe(*addr, packageverdict.New(verdictdb.New(*dbPath)))
+	token := strings.TrimSpace(*authToken)
+	if token == "" {
+		token = strings.TrimSpace(os.Getenv("ATTACH_OPEN_SCORE_API_TOKEN"))
+	}
+
+	opts := packageverdict.ServerOptions{
+		AuthToken:         token,
+		RequestsPerMinute: *rateLimit,
+		Burst:             *rateBurst,
+	}
+
+	authState := "disabled (loopback only)"
+	if token != "" {
+		authState = "enabled (Bearer token)"
+	}
+	fmt.Fprintf(stdout, "attach-open-score serving on http://%s/v0/verdict (auth: %s, rate-limit: %d/min)\n", *addr, authState, *rateLimit)
+	return packageverdict.ListenAndServeWithOptions(*addr, packageverdict.New(verdictdb.New(*dbPath)), opts)
 }
 
 func newScoreEngine(profile string) (score.Engine, error) {
