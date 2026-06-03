@@ -69,6 +69,21 @@ Score a local request:
 go run ./cmd/attach-open-score score --input request.json
 ```
 
+Score a package coordinate through the live package resolver:
+
+```bash
+go run ./cmd/attach-open-score package \
+  --ecosystem npm \
+  --name left-pad \
+  --version 1.3.0
+```
+
+Run the local verdict API used by HTTP clients:
+
+```bash
+go run ./cmd/attach-open-score serve --addr 127.0.0.1:8757
+```
+
 Analyze a local npm tarball involved in an attempted install:
 
 ```bash
@@ -92,6 +107,8 @@ go run ./cmd/attach-open-score fixtures manifest \
 | `attach-open-score --root .` | Validate repository fixtures under `fixtures/v0/` |
 | `attach-open-score score --input request.json` | Evaluate normalized local evidence into a verdict |
 | `attach-open-score score-bundle --input bundle.json` | Compose offline adapter evidence and score it together |
+| `attach-open-score package --ecosystem npm --name left-pad --version 1.3.0` | Resolve public package-coordinate evidence, score it, and cache the verdict |
+| `attach-open-score serve --addr 127.0.0.1:8757` | Serve `POST /v0/verdict` for Attach Open Score-compatible clients |
 | `attach-open-score npm-artifact --input package.tgz --package name --version version` | Inspect one local npm tarball without executing it |
 | `attach-open-score fixtures manifest --input fixtures/manifests/provider-consumer-v0.json` | Validate and summarize fixture metadata |
 
@@ -108,6 +125,23 @@ Example:
 go run ./cmd/attach-open-score score \
   --input request.json \
   --policy-profile ci-strict
+```
+
+Package-coordinate scoring stores completed verdicts in a small local JSON database so a package version is not rescored repeatedly. The cache key is `ecosystem/name/version/policy_profile`.
+
+- Default database: `~/.attach-open-score/scores.json`
+- Override with `ATTACH_OPEN_SCORE_DB_PATH=/path/to/scores.json`
+- Override per command with `--db /path/to/scores.json`
+- Bypass and refresh a cached verdict with `package --refresh`
+
+Example:
+
+```bash
+ATTACH_OPEN_SCORE_DB_PATH=/tmp/attach-open-score.json \
+  go run ./cmd/attach-open-score package \
+    --ecosystem npm \
+    --name left-pad \
+    --version 1.3.0
 ```
 
 ## Current Adapter Support
@@ -144,6 +178,8 @@ Attach Open Score is a Go module with a thin CLI over deterministic library pack
 
 ```text
 cmd/attach-open-score/        CLI entrypoint
+internal/packageverdict/      package-coordinate resolver and local HTTP verdict API
+internal/verdictdb/           local package-version verdict cache
 pkg/score/                    public scoring API and policy-profile evaluation
 pkg/schema/                   score/request/domain types aligned with spec/v0
 pkg/reasons/                  stable reason-code constants and helpers
@@ -206,8 +242,8 @@ Near-term work should stay small and reviewable:
 - keep expanding fixture coverage across ecosystems and policy profiles
 - add more provider-consumer examples for real install decision shapes
 - improve package-range handling for pip, Cargo, and Go module edge cases
-- add opt-in live source lookups only after source terms, caching, attribution, and rate-limit behavior are reviewed
-- build tighter Attach Guard integration around verdict-first policy behavior
+- expand opt-in live source lookups only after source terms, caching, attribution, and rate-limit behavior are reviewed
+- keep tightening Attach Guard integration around verdict-first policy behavior
 - add hosted/provider APIs outside this public method repo without leaking private user context into public fixtures or docs
 - keep npm artifact analysis on-demand before considering any broader registry monitoring architecture
 
