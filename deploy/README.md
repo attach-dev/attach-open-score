@@ -80,6 +80,6 @@ curl -s -X POST localhost:8757/v0/verdict \
 
 ```bash
 export ATTACH_OPEN_SCORE_ENDPOINT=https://score.attach.dev/v0/verdict
-# Guard's open-score HTTP provider sends the Bearer token via its configured
-# api_token_env once wired; until then the endpoint can be kept private.
+export ATTACH_OPEN_SCORE_API_TOKEN=<token>
+# Guard's open-score HTTP provider sends Authorization: Bearer <token>.
 ```
