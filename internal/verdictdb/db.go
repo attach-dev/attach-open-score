@@ -36,6 +36,12 @@ type Key struct {
 
 const schemaVersion = "attach-open-score-cache/v0"
 
+// maxEntries bounds the on-disk cache so an attacker submitting an unbounded
+// stream of distinct package coordinates cannot exhaust disk or degrade the
+// O(n) rewrite path. Oldest entries are evicted first (FIFO). It is a var only
+// so tests can exercise eviction with a small bound.
+var maxEntries = 50000
+
 func DefaultPath() string {
 	if override := strings.TrimSpace(os.Getenv("ATTACH_OPEN_SCORE_DB_PATH")); override != "" {
 		return override
@@ -97,6 +103,9 @@ func (db *DB) Put(key Key, verdict schema.Verdict) error {
 	}
 	if !replaced {
 		data.Entries = append(data.Entries, Entry{Key: key, Verdict: verdict})
+		if len(data.Entries) > maxEntries {
+			data.Entries = data.Entries[len(data.Entries)-maxEntries:]
+		}
 	}
 	return db.save(data)
 }
