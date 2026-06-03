@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -12,6 +13,8 @@ import (
 	"strings"
 
 	"github.com/attach-dev/attach-open-score/internal/fixtures"
+	"github.com/attach-dev/attach-open-score/internal/packageverdict"
+	"github.com/attach-dev/attach-open-score/internal/verdictdb"
 	"github.com/attach-dev/attach-open-score/pkg/schema"
 	"github.com/attach-dev/attach-open-score/pkg/score"
 	"github.com/attach-dev/attach-open-score/pkg/sources/compose"
@@ -39,6 +42,12 @@ func runE(args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	}
 	if len(args) > 0 && args[0] == "npm-artifact" {
 		return runNPMArtifact(args[1:], stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "package" {
+		return runPackage(args[1:], stdout, stderr)
+	}
+	if len(args) > 0 && args[0] == "serve" {
+		return runServe(args[1:], stdout, stderr)
 	}
 	if len(args) > 0 && args[0] == "fixtures" {
 		return runFixtures(args[1:], stdout, stderr)
@@ -301,6 +310,67 @@ func runNPMArtifact(args []string, stdout, stderr io.Writer) error {
 	}
 	_, err = fmt.Fprintln(stdout)
 	return err
+}
+
+func runPackage(args []string, stdout, stderr io.Writer) error {
+	flags := flag.NewFlagSet("attach-open-score package", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	ecosystem := flags.String("ecosystem", "", "package ecosystem: npm, pypi, crates, go, maven, or rubygems")
+	name := flags.String("name", "", "package name")
+	version := flags.String("version", "", "resolved package version")
+	profile := flags.String("policy-profile", "default", "policy profile: default, local-dev-default, ci-strict, or audit-only")
+	dbPath := flags.String("db", "", "score database path; defaults to ATTACH_OPEN_SCORE_DB_PATH or ~/.attach-open-score/scores.json")
+	refresh := flags.Bool("refresh", false, "ignore any cached verdict and recompute")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() > 0 {
+		return fmt.Errorf("package does not accept positional arguments: %v", flags.Args())
+	}
+
+	resolver := packageverdict.New(verdictdb.New(*dbPath))
+	verdict, cached, err := resolver.Resolve(context.Background(), packageverdict.Request{
+		Ecosystem:     *ecosystem,
+		Name:          *name,
+		Version:       *version,
+		PolicyProfile: *profile,
+		Refresh:       *refresh,
+	})
+	if err != nil {
+		return err
+	}
+	encoded, err := json.MarshalIndent(verdict, "", "  ")
+	if err != nil {
+		return err
+	}
+	if _, err := stdout.Write(encoded); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintln(stdout); err != nil {
+		return err
+	}
+	if cached {
+		_, err = fmt.Fprintln(stderr, "attach-open-score: cache hit")
+	} else {
+		_, err = fmt.Fprintln(stderr, "attach-open-score: cache miss")
+	}
+	return err
+}
+
+func runServe(args []string, stdout, stderr io.Writer) error {
+	flags := flag.NewFlagSet("attach-open-score serve", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	addr := flags.String("addr", "127.0.0.1:8757", "HTTP listen address")
+	dbPath := flags.String("db", "", "score database path; defaults to ATTACH_OPEN_SCORE_DB_PATH or ~/.attach-open-score/scores.json")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if flags.NArg() > 0 {
+		return fmt.Errorf("serve does not accept positional arguments: %v", flags.Args())
+	}
+
+	fmt.Fprintf(stdout, "attach-open-score serving on http://%s/v0/verdict\n", *addr)
+	return packageverdict.ListenAndServe(*addr, packageverdict.New(verdictdb.New(*dbPath)))
 }
 
 func newScoreEngine(profile string) (score.Engine, error) {
